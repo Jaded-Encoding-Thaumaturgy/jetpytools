@@ -5,7 +5,7 @@ from typing import cast
 
 import setuptools
 
-package_name = 'stgpytools'
+package_name = 'jetpytools'
 
 exec(Path(f'{package_name}/_metadata.py').read_text(), meta := cast(dict[str, str], {}))
 
@@ -22,7 +22,8 @@ setuptools.setup(
     long_description=readme,
     long_description_content_type='text/markdown',
     project_urls={
-        'Source Code': 'https://github.com/Setsugennoao/stgpytools',
+        'Source Code': 'https://github.com/Jaded-Encoding-Thaumaturgy/jetpytools',
+        'Contact': 'https://discord.gg/XTpc6Fa9eB',
     },
     python_requires='>=3.10',
     packages=[

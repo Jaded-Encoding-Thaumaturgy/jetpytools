@@ -516,7 +516,7 @@ class cachedproperty(property, Generic[P, R, T, T0, P0]):
 
     __isabstractmethod__: bool = False
 
-    cache_key = '_stgpt_cachedproperty_cache'
+    cache_key = '_jetpt_cachedproperty_cache'
 
     class baseclass:
         """Inherit from this class to automatically set the cache dict."""

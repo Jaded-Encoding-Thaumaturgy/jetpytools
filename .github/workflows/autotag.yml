@@ -2,9 +2,9 @@ name: Check and create tag
 on:
   push:
     branches:
-      - master
+      - main
     paths:
-      - stgpytools/_metadata.py
+      - jetpytools/_metadata.py
 
 jobs:
   new_version:
@@ -15,7 +15,7 @@ jobs:
 
       - name: Get version number
         run: |
-          echo "CURR_VER=v$(python -c "import runpy;runpy.run_path('stgpytools/_metadata.py', None, '__github__')")" >> $GITHUB_ENV
+          echo "CURR_VER=v$(python -c "import runpy;runpy.run_path('jetpytools/_metadata.py', None, '__github__')")" >> $GITHUB_ENV
       - name: Check if version exists
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
