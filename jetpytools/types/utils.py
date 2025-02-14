@@ -145,7 +145,7 @@ class inject_self_base(Generic[T, P, R]):
         @wraps(self.function)
         def _wrapper(*args: Any, **kwargs: Any) -> Any:
             first_arg = (args[0] if args else None) or (
-                kwargs.get(self.first_key, None) if self.first_key else None  # type: ignore
+                kwargs.get(self.first_key, None) if self.first_key else None
             )
 
             if (
