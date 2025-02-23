@@ -8,7 +8,8 @@ from .supports import SupportsString
 
 __all__ = [
     'StrList',
-    'Sentinel'
+    'Sentinel',
+    'SentinelT'
 ]
 
 
@@ -99,10 +100,9 @@ class SentinelDispatcher:
     def __call__(self) -> SentinelDispatcher:
         return SentinelDispatcher()
 
-    Type: TypeAlias = 'SentinelDispatcher'
-
 
 Sentinel = SentinelDispatcher()
+SentinelT: TypeAlias = SentinelDispatcher
 
 _sentinels = dict[str, SentinelDispatcher]()
 
