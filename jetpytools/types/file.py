@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import fnmatch
 import shutil
+
 from os import PathLike, listdir, path, walk
 from pathlib import Path
+from sys import version_info
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, TypeAlias, Union
 
 __all__ = [
@@ -58,7 +60,8 @@ OpenBinaryMode: TypeAlias = OpenBinaryModeUpdating | OpenBinaryModeReading | Ope
 
 class SPath(Path):
     """Modified version of pathlib.Path"""
-    _flavour = type(Path())._flavour  # type: ignore
+    if version_info < (3, 12):
+        _flavour = type(Path())._flavour  # type: ignore
 
     if TYPE_CHECKING:
         def __new__(cls, *args: SPathLike, **kwargs: Any) -> SPath:
