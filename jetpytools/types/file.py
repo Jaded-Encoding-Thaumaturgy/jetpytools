@@ -194,4 +194,4 @@ class SPath(Path):
         return sum(f.stat().st_size for f in self.rglob('*') if f.is_file())
 
 
-SPathLike = Union[str, Path, SPath]
+SPathLike = Union[str, PathLike[str], Path, SPath]
