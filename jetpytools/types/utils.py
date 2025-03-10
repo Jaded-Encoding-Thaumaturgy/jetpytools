@@ -97,10 +97,15 @@ class injected_self_func(Generic[T, P, R], Protocol):  # type: ignore[misc]
         ...
 
 
-self_objects_cache = dict[type[T], T]()  # type: ignore
+self_objects_cache = dict[type, Any]()
 
 
 class inject_self_base(Generic[T, P, R]):
+    cache: bool | None
+    signature: Signature | None
+    init_kwargs: list[str] | None
+    first_key: str | None
+
     def __init__(self, function: Callable[Concatenate[T, P], R], /, *, cache: bool = False) -> None:
         """
         Wrap ``function`` to always have a self provided to it.
@@ -126,20 +131,20 @@ class inject_self_base(Generic[T, P, R]):
     def __get__(
         self, class_obj: type[T] | T | None, class_type: type[T] | type[type[T]]  # type: ignore
     ) -> injected_self_func[T, P, R]:
-        if not self.signature or not self.first_key:  # type: ignore
-            self.signature = Signature.from_callable(self.function, eval_str=True)  # type: ignore
-            self.first_key = next(iter(list(self.signature.parameters.keys())), None)  # type: ignore
+        if not self.signature or not self.first_key:
+            self.signature = Signature.from_callable(self.function, eval_str=True)
+            self.first_key = next(iter(list(self.signature.parameters.keys())), None)
 
             if isinstance(self, inject_self.init_kwargs):
                 from ..exceptions import CustomValueError
 
-                if 4 not in {x.kind for x in self.signature.parameters.values()}:  # type: ignore
+                if 4 not in {x.kind for x in self.signature.parameters.values()}:
                     raise CustomValueError(
                         'This function hasn\'t got any kwargs!', 'inject_self.init_kwargs', self.function
                     )
 
-                self.init_kwargs = list[str](  # type: ignore
-                    k for k, x in self.signature.parameters.items() if x.kind != 4  # type: ignore
+                self.init_kwargs = list[str](
+                    k for k, x in self.signature.parameters.items() if x.kind != 4
                 )
 
         @wraps(self.function)
@@ -151,15 +156,15 @@ class inject_self_base(Generic[T, P, R]):
             if (
                 first_arg and (
                     (is_obj := isinstance(first_arg, class_type))
-                    or isinstance(first_arg, type(class_type))  # noqa
-                    or first_arg is class_type  # noqa
+                    or isinstance(first_arg, type(class_type))
+                    or first_arg is class_type
                 )
             ):
                 obj = first_arg if is_obj else first_arg()
                 if args:
                     args = args[1:]
                 elif kwargs and self.first_key:
-                    kwargs.pop(self.first_key)  # type: ignore
+                    kwargs.pop(self.first_key)
             elif class_obj is None:
                 if self.cache:
                     if class_type not in self_objects_cache:
@@ -167,7 +172,7 @@ class inject_self_base(Generic[T, P, R]):
                     else:
                         obj = self_objects_cache[class_type]
                 elif self.init_kwargs:
-                    obj = class_type(  # type: ignore
+                    obj = class_type(
                         *self.args, **(self.kwargs | {k: v for k, v in kwargs.items() if k not in self.init_kwargs})
                     )
                     if self.clean_kwargs:
@@ -473,7 +478,7 @@ class classproperty(Generic[P, R, T, T0, P0]):
 
         return self.fget.__get__(__obj, __type)()  # type: ignore
 
-    def __set__(self, __obj: Any, __value: T1) -> None:
+    def __set__(self, __obj: Any, __value: Any) -> None:
         from ..exceptions import CustomError
 
         if not self.fset:

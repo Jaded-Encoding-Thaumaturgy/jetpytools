@@ -18,8 +18,8 @@ class MismatchError(CustomValueError):
         return str(item)
 
     @classmethod
-    def _reduce(cls, items: Iterable[Any]) -> tuple[str]:
-        return tuple[str](dict.fromkeys(map(cls._item_to_name, items)).keys())  # type: ignore
+    def _reduce(cls, items: Iterable[Any]) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(map(cls._item_to_name, items)).keys())
 
     def __init__(
         self, func: FuncExceptT, items: Iterable[Any], message: SupportsString = 'All items must be equal!',

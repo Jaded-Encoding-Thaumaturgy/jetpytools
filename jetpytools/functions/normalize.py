@@ -70,22 +70,20 @@ def to_arr(val: T | Sequence[T], *, sub: bool = False) -> list[T]:
 
 
 @overload
-def flatten(items: T | Iterable[T | Iterable[T | Iterable[T]]]) -> Iterable[T]:
+def flatten(items: Iterable[Iterable[T]]) -> Iterator[T]:
     ...
 
 
 @overload
-def flatten(items: T | Iterable[T | Iterable[T]]) -> Iterable[T]:  # type: ignore
+def flatten(items: Iterable[Any]) -> Iterator[Any]:
     ...
 
 
-@overload
-def flatten(items: T | Iterable[T]) -> Iterable[T]:  # type: ignore
-    ...
-
-
-def flatten(items: Any) -> Any:
-    """Flatten an array of values."""
+def flatten(items: Any) -> Iterator[Any]:
+    """
+    Flatten an array of values.
+    Bytes and str are not considered iterable and will not be flattened..
+    """
 
     for val in items:
         if isinstance(val, Iterable) and not isinstance(val, (str, bytes)):
@@ -215,7 +213,7 @@ def invert_ranges(ranges: SoftRangeN | SoftRangesN, enda: int, endb: int | None)
     return normalize_list_to_ranges({*range(enda)} - b_frames)
 
 
-def norm_func_name(func_name: SupportsString | F) -> str:
+def norm_func_name(func_name: SupportsString | Callable[..., Any]) -> str:
     """Normalize a class, function, or other object to obtain its name"""
 
     if isinstance(func_name, str):

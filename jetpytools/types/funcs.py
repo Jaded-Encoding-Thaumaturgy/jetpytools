@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, Self, SupportsIndex, TypeAlias, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, Self, SupportsIndex, TypeAlias, overload
 
 from typing_extensions import TypeIs
 
@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-class StrList(List[SupportsString]):
+class StrList(list[SupportsString]):
     """Custom class for representing a recursively "stringable" list."""
 
     if TYPE_CHECKING:
@@ -43,7 +43,7 @@ class StrList(List[SupportsString]):
         return ' '.join(
             filter(
                 None,
-                (str(x).strip() for x in flatten(self) if x is not None)  # type: ignore[var-annotated,arg-type]
+                (str(x).strip() for x in flatten(self) if x is not None)
             )
         )
 
