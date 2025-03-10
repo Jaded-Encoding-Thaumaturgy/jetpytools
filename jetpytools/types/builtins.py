@@ -53,10 +53,7 @@ SoftRange: TypeAlias = int | StrictRange | Sequence[int]
 
 SoftRangeN: TypeAlias = int | tuple[int | None, int | None] | None
 
-if TYPE_CHECKING:
-    SoftRangesN: TypeAlias = Sequence[SoftRangeN]
-else:
-    SoftRangesN: TypeAlias = list[SoftRangeN]
+SoftRangesN: TypeAlias = Sequence[SoftRangeN]
 
 SingleOrArr = Union[T, list[T]]
 SingleOrSeq = Union[T, Sequence[T]]

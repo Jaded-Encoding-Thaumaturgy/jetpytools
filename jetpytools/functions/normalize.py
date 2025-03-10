@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from fractions import Fraction
-from typing import Any, Iterable, Iterator, Sequence, overload
+from typing import Any, Callable, Iterable, Iterator, Sequence, overload
 
-from ..types import F, SupportsString, T, SoftRange, SoftRangeN, SoftRangesN, StrictRange
+from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, T, is_soft_range_n
 
 __all__ = [
     'normalize_seq',
@@ -174,7 +174,7 @@ def normalize_ranges(ranges: SoftRangeN | SoftRangesN, end: int) -> list[StrictR
     :return:            List of positive frame ranges.
     """
 
-    ranges = ranges if isinstance(ranges, list) else [ranges]  # type:ignore
+    ranges = [ranges] if is_soft_range_n(ranges) else ranges
 
     out = []
 
