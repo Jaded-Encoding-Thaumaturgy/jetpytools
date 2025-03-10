@@ -47,26 +47,26 @@ def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
     return val[:length]
 
 
-_iterables_t = (list, tuple, range, zip, set, map, enumerate)
-
-
 @overload
-def to_arr(val: list[T], *, sub: bool = False) -> list[T]:
+def to_arr(val: T | Iterable[T]) -> list[T]:
     ...
 
 
 @overload
-def to_arr(val: T | Sequence[T], *, sub: bool = False) -> list[T]:
+def to_arr(val: Any) -> list[Any]:
     ...
 
 
-def to_arr(val: T | Sequence[T], *, sub: bool = False) -> list[T]:
-    """Normalize any value into an iterable."""
-
+def to_arr(val: Any, *, sub: Any = []) -> list[Any]:
+    """
+    Normalize any value to a list.
+    Bytes and str are not considered iterable and will not be flattened.
+    """
     if sub:
-        return list(val) if any(isinstance(val, x) for x in _iterables_t) else [val]  # type: ignore
+        import warnings
+        warnings.warn("sub is deprecated.", DeprecationWarning)
 
-    return list(val) if type(val) in _iterables_t else [val]  # type: ignore
+    return list(val) if (isinstance(val, Iterable) and not isinstance(val, (str, bytes))) else [val]
 
 
 @overload
