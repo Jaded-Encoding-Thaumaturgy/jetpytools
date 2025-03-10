@@ -19,12 +19,12 @@ __all__ = [
 
 
 @overload
-def normalize_seq(val: Sequence[T], length: int) -> list[T]:
+def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
     ...
 
 
 @overload
-def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
+def normalize_seq(val: Any, length: int) -> list[Any]:
     ...
 
 
