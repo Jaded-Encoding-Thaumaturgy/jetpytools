@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, Self, SupportsIndex, TypeAlias, overload
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, SupportsIndex, TypeAlias, overload
 
-from typing_extensions import TypeIs
+from typing_extensions import Self, TypeIs
 
 from .builtins import P, T
 from .supports import SupportsString
