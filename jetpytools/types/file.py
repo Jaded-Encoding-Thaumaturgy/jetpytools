@@ -121,7 +121,7 @@ class SPath(Path):
 
         from ..functions import to_arr
 
-        return self.with_stem(sep.join([self.stem, *to_arr(suffixes)]))  # type:ignore[list-item]
+        return self.with_stem(sep.join([self.stem, *to_arr(suffixes)]))
 
     def is_empty_dir(self) -> bool:
         """Check if the directory is empty."""
@@ -176,10 +176,12 @@ class SPath(Path):
 
         matching_files = self.get_folder().glob(pattern)
 
-        if not matching_files:
+        try:
+            next(matching_files)
+        except StopIteration:
             return None
 
-        return max(matching_files, key=lambda p: p.stat().st_mtime, default=None)  # type:ignore
+        return max(matching_files, key=lambda p: p.stat().st_mtime)
 
     def get_size(self) -> int:
         """Get the size of the file or directory in bytes."""
