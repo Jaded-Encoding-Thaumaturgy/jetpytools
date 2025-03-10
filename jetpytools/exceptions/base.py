@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import sys
+
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from ..types import MISSING, FuncExceptT, SupportsString
+from typing_extensions import Self
+
+from ..types import MISSING, FuncExceptT, SupportsString, MissingT
 
 __all__ = [
     'CustomError',
@@ -112,10 +115,12 @@ class CustomError(ExceptionT, metaclass=CustomErrorMeta):
         return CustomErrorMeta.setup_exception(inner_exception, exception)  # type: ignore
 
     def __call__(
-        self: SelfError, message: SupportsString | None = MISSING,
-        func: FuncExceptT | None = MISSING, reason: SupportsString | FuncExceptT | None = MISSING,  # type: ignore
+        self,
+        message: SupportsString | None | MissingT = MISSING,
+        func: FuncExceptT | None | MissingT = MISSING,
+        reason: SupportsString | FuncExceptT | None | MissingT = MISSING,
         **kwargs: Any
-    ) -> SelfError:
+    ) -> Self:
         """
         Copy an existing exception with defaults and instantiate a new one.
 
@@ -129,7 +134,7 @@ class CustomError(ExceptionT, metaclass=CustomErrorMeta):
         if message is not MISSING:
             err.message = message
 
-        if func is not MISSING:  # type: ignore[comparison-overlap]
+        if func is not MISSING:
             err.func = func
 
         if reason is not MISSING:

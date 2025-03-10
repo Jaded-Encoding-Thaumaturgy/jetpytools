@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from functools import wraps
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, Self, SupportsIndex, TypeAlias, TypeVar, overload
 
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, SupportsIndex, TypeAlias, TypeVar, overload
+from typing_extensions import TypeIs
 
-from .builtins import T, P
+from .builtins import P, T
 from .supports import SupportsString
 
 __all__ = [
@@ -74,20 +76,22 @@ class SentinelDispatcher:
 
         return _wrap
 
-    def filter(self: SelfSentinel, items: Iterable[T | SelfSentinel]) -> Iterable[T]:
+    def filter(self, items: Iterable[T | Self]) -> Iterator[T]:
         for item in items:
-            if item is self:
+            if isinstance(item, SentinelDispatcher):
                 continue
-
-            yield item  # type: ignore
+            yield item
 
     @classmethod
-    def filter_multi(cls, items: Iterable[T | SelfSentinel], *sentinels: SelfSentinel) -> Iterable[T]:
+    def filter_multi(cls, items: Iterable[T | Self], *sentinels: Self) -> Iterator[T]:
+        def _in_sentinels(it: Any) -> TypeIs[SentinelDispatcher]:
+            return it in sentinels
+
         for item in items:
-            if item in sentinels:
+            if _in_sentinels(item):
                 continue
 
-            yield item  # type: ignore
+            yield item
 
     def __getattr__(self, name: str) -> SentinelDispatcher:
         if name not in _sentinels:
@@ -105,5 +109,3 @@ Sentinel = SentinelDispatcher()
 SentinelT: TypeAlias = SentinelDispatcher
 
 _sentinels = dict[str, SentinelDispatcher]()
-
-SelfSentinel = TypeVar('SelfSentinel', bound=SentinelDispatcher)

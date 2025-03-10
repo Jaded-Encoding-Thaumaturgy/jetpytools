@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any
+
+from typing_extensions import Self
 
 from ..exceptions import CustomValueError, NotFoundEnumValue
 from ..types import FuncExceptT
 
 __all__ = [
-    'SelfEnum',
     'CustomEnum', 'CustomIntEnum', 'CustomStrEnum'
 ]
 
@@ -16,11 +17,11 @@ class CustomEnum(Enum):
     """Base class for custom enums."""
 
     @classmethod
-    def _missing_(cls: type[SelfEnum], value: Any) -> SelfEnum | None:
+    def _missing_(cls, value: Any) -> Self | None:
         return cls.from_param(value)
 
     @classmethod
-    def from_param(cls: type[SelfEnum], value: Any, func_except: FuncExceptT | None = None) -> SelfEnum | None:
+    def from_param(cls, value: Any, func_except: FuncExceptT | None = None) -> Self | None:
         """
         Return the enum value from a parameter.
 
@@ -73,6 +74,3 @@ class CustomStrEnum(str, CustomEnum):
     """Base class for custom str enums."""
 
     value: str
-
-
-SelfEnum = TypeVar('SelfEnum', bound=CustomEnum)

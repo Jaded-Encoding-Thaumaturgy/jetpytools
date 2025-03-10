@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TypeVar, overload
+from typing import overload
+from typing_extensions import Self
 
 __all__ = [
     'Coordinate',
@@ -23,14 +24,14 @@ class Coordinate:
     """Vertical coordinate."""
 
     @overload
-    def __init__(self: SelfCoord, other: tuple[int, int] | SelfCoord, /) -> None:
+    def __init__(self, other: tuple[int, int] | Self, /) -> None:
         ...
 
     @overload
-    def __init__(self: SelfCoord, x: int, y: int, /) -> None:
+    def __init__(self, x: int, y: int, /) -> None:
         ...
 
-    def __init__(self: SelfCoord, x_or_self: int | tuple[int, int] | SelfCoord, y: int | None = None, /) -> None:
+    def __init__(self, x_or_self: int | tuple[int, int] | Self, y: int | None = None, /) -> None:
         from ..exceptions import CustomValueError
 
         if isinstance(x_or_self, int):
@@ -46,9 +47,6 @@ class Coordinate:
 
         self.x = x
         self.y = y
-
-
-SelfCoord = TypeVar('SelfCoord', bound=Coordinate)
 
 
 class Position(Coordinate):

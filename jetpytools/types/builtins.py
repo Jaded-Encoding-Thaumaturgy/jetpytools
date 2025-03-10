@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING, Any, Callable, ParamSpec, Sequence, SupportsFloat, SupportsIndex, TypeAlias, TypeVar, Union
-)
+from typing import Any, Callable, ParamSpec, Sequence, SupportsFloat, SupportsIndex, TypeAlias, TypeVar, Union
 
 __all__ = [
     'T', 'T0', 'T1', 'T2', 'T_contra',
@@ -15,8 +13,6 @@ __all__ = [
     'Nb',
 
     'StrictRange', 'SoftRange', 'SoftRangeN', 'SoftRangesN',
-
-    'Self',
 
     'SingleOrArr', 'SingleOrArrOpt',
     'SingleOrSeq', 'SingleOrSeqOpt',
@@ -51,8 +47,6 @@ R2 = TypeVar('R2')
 
 T_contra = TypeVar('T_contra', contravariant=True)
 R_contra = TypeVar('R_contra', contravariant=True)
-
-Self = TypeVar('Self')
 
 StrictRange: TypeAlias = tuple[int, int]
 SoftRange: TypeAlias = int | StrictRange | Sequence[int]
