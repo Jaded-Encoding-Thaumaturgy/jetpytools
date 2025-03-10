@@ -168,8 +168,8 @@ def normalize_ranges(ranges: SoftRangeN | SoftRangesN, end: int) -> list[StrictR
         [(24, 150)]
 
 
-    :param clip:        Input clip.
     :param franges:     Frame range or list of frame ranges.
+    :param end:         End number.
 
     :return:            List of positive frame ranges.
     """
