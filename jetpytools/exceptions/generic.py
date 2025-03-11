@@ -28,7 +28,7 @@ class MismatchError(CustomValueError):
         super().__init__(message, func, reason, **kwargs, reduced_items=iter(self._reduce(items)))
 
     @classmethod
-    def check(cls, func: FuncExceptT, *items: Any, **kwargs: Any) -> None:
+    def check(cls, func: FuncExceptT, /, *items: Any, **kwargs: Any) -> None:
         if len(cls._reduce(items)) != 1:
             raise cls(func, items, **kwargs)
 
@@ -40,6 +40,6 @@ class MismatchRefError(MismatchError):
         super().__init__(func, [base, ref], message, **kwargs)
 
     @classmethod
-    def check(cls, func: FuncExceptT, *items: Any, **kwargs: Any) -> None:
+    def check(cls, func: FuncExceptT, /, *items: Any, **kwargs: Any) -> None:
         if len(cls._reduce(items)) != 1:
             raise cls(func, *items, **kwargs)
