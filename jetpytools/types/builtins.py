@@ -8,7 +8,7 @@ __all__ = [
     'F', 'F0', 'F1', 'F2',
 
     'P', 'P0', 'P1', 'P2',
-    'R', 'R0', 'R1', 'R2', 'R_contra',
+    'R', 'R0', 'R1', 'R2', 'R_co', 'R0_co', 'R_contra',
 
     'Nb',
 
@@ -44,6 +44,9 @@ R = TypeVar('R')
 R0 = TypeVar('R0')
 R1 = TypeVar('R1')
 R2 = TypeVar('R2')
+
+R_co = TypeVar('R_co', covariant=True)
+R0_co = TypeVar('R0_co', covariant=True)
 
 T_contra = TypeVar('T_contra', contravariant=True)
 R_contra = TypeVar('R_contra', contravariant=True)

@@ -8,8 +8,9 @@ from typing import (
     TYPE_CHECKING, Any, Callable, Concatenate, Generator, Generic, Iterable, Iterator, Mapping,
     NoReturn, Protocol, Sequence, TypeVar, cast, overload
 )
+from typing_extensions import Self
 
-from .builtins import F0, F1, P0, P1, R0, R1, T0, T1, T2, KwargsT, P, R, T
+from .builtins import F0, F1, P0, P1, R0, R1, T0, T1, T2, KwargsT, P, R, R_co, R0_co, T
 
 __all__ = [
     'copy_signature',
@@ -508,7 +509,7 @@ class classproperty(Generic[P, R, T, T0, P0]):
         return self.fget.__name__
 
 
-class cachedproperty(property, Generic[P, R, T, T0, P0]):
+class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
     """
     Wrapper for a one-time get property, that will be cached.
 
@@ -537,21 +538,29 @@ class cachedproperty(property, Generic[P, R, T, T0, P0]):
 
     if TYPE_CHECKING:
         def __init__(
-            self, fget: Callable[P, R], fset: Callable[[T, T0], None] | None = None,
+            self, fget: Callable[P, R_co], fset: Callable[[T, T0], None] | None = None,
             fdel: Callable[P0, None] | None = None, doc: str | None = None,
         ) -> None:
             ...
 
-        def getter(self, __fget: Callable[P1, R1]) -> cachedproperty[P1, R1, T, T0, P0]:
+        def getter(self, __fget: Callable[P1, R0_co]) -> cachedproperty[P1, R0_co, T, T0, P0]:
             ...
 
-        def setter(self, __fset: Callable[[T1, T2], None]) -> cachedproperty[P, R, T1, T2, P0]:
+        def setter(self, __fset: Callable[[T1, T2], None]) -> cachedproperty[P, R_co, T1, T2, P0]:
             ...
 
-        def deleter(self, __fdel: Callable[P1, None]) -> cachedproperty[P, R, T, T0, P1]:
+        def deleter(self, __fdel: Callable[P1, None]) -> cachedproperty[P, R_co, T, T0, P1]:
             ...
 
-    def __get__(self, __obj: Any, __type: type | None = None) -> R:
+    @overload
+    def __get__(self, __obj: None, __type: type | None = None) -> Self:
+        ...
+
+    @overload
+    def __get__(self, __obj: object, __type: type | None = None) -> R_co:
+        ...
+
+    def __get__(self, __obj: Any, __type: type | None = None) -> Any:
         if isinstance(self.fget, classproperty):
             function = partial(self.fget.__get__, __obj, __type)  # type: ignore
             __obj = __type
@@ -562,14 +571,19 @@ class cachedproperty(property, Generic[P, R, T, T0, P0]):
             cache = getattr(__obj, cachedproperty.cache_key)
             name = self.fget.__name__
         else:
-            function = self.fget.__get__(__obj, __type)  # type: ignore
+            assert self.fget
+            function = self.fget.__get__(__obj, __type)
             cache = __obj.__dict__.get(cachedproperty.cache_key)
             name = function.__name__
 
         if name not in cache:
             cache[name] = function()
 
-        return cache[name]  # type: ignore
+        return cache[name]
+
+    if TYPE_CHECKING:
+        def __set__(self, obj: Any, value: R_co, /) -> None:  # type: ignore[misc]
+            ...
 
 
 class KwargsNotNone(KwargsT):
