@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any
 
 from typing_extensions import Self
 
@@ -9,7 +9,6 @@ from ..exceptions import CustomValueError, NotFoundEnumValue
 from ..types import FuncExceptT
 
 __all__ = [
-    'SelfEnum',
     'CustomEnum', 'CustomIntEnum', 'CustomStrEnum'
 ]
 
@@ -75,6 +74,3 @@ class CustomStrEnum(str, CustomEnum):
     """Base class for custom str enums."""
 
     value: str
-
-
-SelfEnum = TypeVar('SelfEnum', bound=CustomEnum)
