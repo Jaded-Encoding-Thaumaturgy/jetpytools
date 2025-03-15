@@ -84,6 +84,7 @@ class injected_self_func(Protocol[T_co, P, R_co]):
     def __call__(cls: type[T_co], *args: P.args, **kwargs: P.kwargs) -> R_co:
         ...
 
+
 self_objects_cache = dict[Any, Any]()
 
 
