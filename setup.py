@@ -25,6 +25,7 @@ setuptools.setup(
         'Source Code': 'https://github.com/Jaded-Encoding-Thaumaturgy/jetpytools',
         'Contact': 'https://discord.gg/XTpc6Fa9eB',
     },
+    install_requires="typing_extensions>=4.12.2",
     python_requires='>=3.10',
     packages=[
         package_name,
