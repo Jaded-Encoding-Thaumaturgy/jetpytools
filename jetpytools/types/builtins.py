@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import Any, Callable, ParamSpec, Sequence, SupportsFloat, SupportsIndex, TypeAlias, TypeVar, Union
 
 __all__ = [
-    'T', 'T0', 'T1', 'T2', 'T_contra',
+    'T', 'T0', 'T1', 'T2', 'T_co', 'T0_co', 'T1_co', 'T_contra',
 
     'F', 'F0', 'F1', 'F2',
 
     'P', 'P0', 'P1', 'P2',
-    'R', 'R0', 'R1', 'R2', 'R_co', 'R0_co', 'R_contra',
+    'R', 'R0', 'R1', 'R2', 'R_co', 'R0_co', 'R1_co', 'R_contra',
 
     'Nb',
 
@@ -45,8 +45,13 @@ R0 = TypeVar('R0')
 R1 = TypeVar('R1')
 R2 = TypeVar('R2')
 
+T_co = TypeVar('T_co', covariant=True)
+T0_co = TypeVar('T0_co', covariant=True)
+T1_co = TypeVar('T1_co', covariant=True)
+
 R_co = TypeVar('R_co', covariant=True)
 R0_co = TypeVar('R0_co', covariant=True)
+R1_co = TypeVar('R1_co', covariant=True)
 
 T_contra = TypeVar('T_contra', contravariant=True)
 R_contra = TypeVar('R_contra', contravariant=True)

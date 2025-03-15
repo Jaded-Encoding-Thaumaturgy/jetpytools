@@ -5,12 +5,13 @@ from inspect import Signature
 from inspect import _empty as empty_param
 from inspect import isclass
 from typing import (
-    TYPE_CHECKING, Any, Callable, Concatenate, Generator, Generic, Iterable, Iterator, Mapping,
-    NoReturn, Protocol, Sequence, TypeVar, cast, overload
+    TYPE_CHECKING, Any, Callable, Concatenate, Generator, Generic, Iterable, Iterator, Mapping, NoReturn, Protocol,
+    Sequence, TypeVar, cast, overload
 )
+
 from typing_extensions import Self
 
-from .builtins import F0, F1, P0, P1, R0, R1, T0, T1, T2, KwargsT, P, R, R_co, R0_co, T
+from .builtins import F0, F1, P0, P1, R0, R1, T0, T1, T2, KwargsT, P, R, R0_co, R1_co, R_co, T, T0_co, T1_co, T_co
 
 __all__ = [
     'copy_signature',
@@ -67,47 +68,32 @@ class copy_signature(Generic[F0]):
         return cast(F0, wrapped)
 
 
-class injected_self_func(Generic[T, P, R], Protocol):  # type: ignore[misc]
+class injected_self_func(Protocol[T_co, P, R_co]):
     @overload
     @staticmethod
-    def __call__(*args: P.args, **kwargs: P.kwargs) -> R:
-        ...
-
-    @overload
-    @staticmethod
-    def __call__(self: T, *args: P.args, **kwargs: P.kwargs) -> R:
+    def __call__(*args: P.args, **kwargs: P.kwargs) -> R_co:
         ...
 
     @overload
     @staticmethod
-    def __call__(self: T, _self: T, *args: P.args, **kwargs: P.kwargs) -> R:
+    def __call__(self: T_co, *args: P.args, **kwargs: P.kwargs) -> R_co:  # type: ignore[misc]
         ...
 
     @overload
     @staticmethod
-    def __call__(cls: type[T], *args: P.args, **kwargs: P.kwargs) -> R:
+    def __call__(cls: type[T_co], *args: P.args, **kwargs: P.kwargs) -> R_co:
         ...
 
-    @overload
-    @staticmethod
-    def __call__(cls: type[T], _cls: type[T], *args: P.args, **kwargs: P.kwargs) -> R:
-        ...
-
-    @staticmethod
-    def __call__(*args: Any, **kwds: Any) -> Any:
-        ...
+self_objects_cache = dict[Any, Any]()
 
 
-self_objects_cache = dict[type, Any]()
-
-
-class inject_self_base(Generic[T, P, R]):
+class inject_self_base(Generic[T_co, P, R_co]):
     cache: bool | None
     signature: Signature | None
     init_kwargs: list[str] | None
     first_key: str | None
 
-    def __init__(self, function: Callable[Concatenate[T, P], R], /, *, cache: bool = False) -> None:
+    def __init__(self, function: Callable[Concatenate[T_co, P], R_co], /, *, cache: bool = False) -> None:
         """
         Wrap ``function`` to always have a self provided to it.
 
@@ -130,8 +116,8 @@ class inject_self_base(Generic[T, P, R]):
         self.clean_kwargs = False
 
     def __get__(
-        self, class_obj: type[T] | T | None, class_type: type[T] | type[type[T]]  # type: ignore
-    ) -> injected_self_func[T, P, R]:
+        self, class_obj: type[T] | T | None, class_type: type[T] | type[type[T]] | Any  # type: ignore[valid-type]
+    ) -> injected_self_func[T_co, P, R_co]:
         if not self.signature or not self.first_key:
             self.signature = Signature.from_callable(self.function, eval_str=True)
             self.first_key = next(iter(list(self.signature.parameters.keys())), None)
@@ -187,8 +173,8 @@ class inject_self_base(Generic[T, P, R]):
 
         return _wrapper
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
-        return self.__get__(None, self)(*args, **kwargs)  # type: ignore
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R_co:
+        return self.__get__(None, self)(*args, **kwargs)
 
     @property
     def __signature__(self) -> Signature:
@@ -197,7 +183,7 @@ class inject_self_base(Generic[T, P, R]):
     @classmethod
     def with_args(
         cls, *args: Any, **kwargs: Any
-    ) -> Callable[[Callable[Concatenate[T0, P0], R0]], inject_self[T0, P0, R0]]:
+    ) -> Callable[[Callable[Concatenate[T0_co, P0], R0_co]], inject_self[T0_co, P0, R0_co]]:
         """Provide custom args to instantiate the ``self`` object with."""
 
         def _wrapper(function: Callable[Concatenate[T0, P0], R0]) -> inject_self[T0, P0, R0]:
@@ -208,69 +194,71 @@ class inject_self_base(Generic[T, P, R]):
         return _wrapper
 
 
-class inject_self(Generic[T, P, R], inject_self_base[T, P, R]):
+class inject_self(inject_self_base[T_co, P, R_co]):
     """Wrap a method so it always has a constructed ``self`` provided to it."""
 
-    class cached(Generic[T0, P0, R0], inject_self_base[T0, P0, R0]):
+    class cached(inject_self_base[T0_co, P0, R0_co]):
         """
         Wrap a method so it always has a constructed ``self`` provided to it.
         Once ``self`` is constructed, it will be reused.
         """
 
-        class property(Generic[T1, R1]):
-            def __init__(self, function: Callable[[T1], R1]) -> None:
+        class property(Generic[T1_co, R1_co]):
+            def __init__(self, function: Callable[[T1_co], R1_co]) -> None:
                 self.function = inject_self(function)
 
             def __get__(
-                self, class_obj: type[T1] | T1 | None, class_type: type[T1] | type[type[T1]]  # type: ignore
-            ) -> R1:
+                self, class_obj: type[T1_co] | T1_co | None, class_type: type[T1_co] | T1_co
+            ) -> R1_co:
                 return self.function.__get__(class_obj, class_type)()
 
-    class init_kwargs(Generic[T0, P0, R0], inject_self_base[T0, P0, R0]):
+    class init_kwargs(inject_self_base[T0_co, P0, R0_co]):
         """
         Wrap a method so it always has a constructed ``self`` provided to it.
         When constructed, kwargs to the function will be passed to the constructor.
         """
 
         @classmethod
-        def clean(cls, function: Callable[Concatenate[T1, P1], R1]) -> inject_self[T1, P1, R1]:
+        def clean(cls, function: Callable[Concatenate[T1_co, P1], R1_co]) -> inject_self[T1_co, P1, R1_co]:
             """Wrap a method, pass kwargs to the constructor and remove them from actual **kwargs."""
             inj = cls(function)  # type: ignore
             inj.clean_kwargs = True
             return inj  # type: ignore
 
-    class property(Generic[T0, R0]):
-        def __init__(self, function: Callable[[T0], R0]) -> None:
+    class property(Generic[T0_co, R0_co]):
+        def __init__(self, function: Callable[[T0_co], R0_co]) -> None:
             self.function = inject_self(function)
 
         def __get__(
-            self, class_obj: type[T0] | T0 | None, class_type: type[T0] | type[type[T0]]  # type: ignore
-        ) -> R0:
+            self, class_obj: type[T0_co] | T0_co | None, class_type: type[T0_co] | T0_co
+        ) -> R0_co:
             return self.function.__get__(class_obj, class_type)()
 
 
-class inject_kwargs_params_base_func(Generic[T, P, R], Callable[Concatenate[T, P], R]):  # type: ignore[misc]
-    def __call__(self: T, *args: P.args, **kwargs: P.kwargs) -> R:  # type: ignore
-        ...
+class inject_kwargs_params_base_func(Generic[T_co, P, R_co]):
+    def __call__(self: T_co, *args: P.args, **kwargs: P.kwargs) -> R_co:
+        raise NotImplementedError
 
 
-class inject_kwargs_params_base(Generic[T, P, R]):
+class inject_kwargs_params_base(Generic[T_co, P, R_co]):
+    signature: Signature | None
+
     _kwargs_name = 'kwargs'
 
-    def __init__(self, function: Callable[Concatenate[T, P], R]) -> None:
+    def __init__(self, function: Callable[Concatenate[T_co, P], R_co]) -> None:
         self.function = function
 
         self.signature = None
 
     def __get__(
         self, class_obj: T, class_type: type[T]
-    ) -> inject_kwargs_params_base_func[T, P, R]:
+    ) -> inject_kwargs_params_base_func[T_co, P, R_co]:
         if not self.signature:
-            self.signature = Signature.from_callable(self.function, eval_str=True)  # type: ignore
+            self.signature = Signature.from_callable(self.function, eval_str=True)
 
             if (
-                isinstance(self, inject_kwargs_params.add_to_kwargs)  # type: ignore
-                and (4 not in {x.kind for x in self.signature.parameters.values()})  # type: ignore
+                isinstance(self, inject_kwargs_params.add_to_kwargs)  # type: ignore[arg-type]
+                and (4 not in {x.kind for x in self.signature.parameters.values()})
             ):
                 from ..exceptions import CustomValueError
 
@@ -281,10 +269,10 @@ class inject_kwargs_params_base(Generic[T, P, R]):
         this = self
 
         @wraps(self.function)
-        def _wrapper(self: T, *_args: P.args, **kwargs: P.kwargs) -> R:
+        def _wrapper(self: Any, *_args: Any, **kwargs: Any) -> R_co:
             assert this.signature
 
-            if class_obj and not isinstance(self, class_type):  # type: ignore
+            if class_obj and not isinstance(self, class_type):
                 _args = (self, *_args)
                 self = class_obj
 
@@ -318,14 +306,14 @@ class inject_kwargs_params_base(Generic[T, P, R]):
 
                     kwargs[key] = kw_value
 
-            if isinstance(this, inject_kwargs_params.add_to_kwargs):
+            if isinstance(this, inject_kwargs_params.add_to_kwargs):  # type: ignore[arg-type]
                 kwargs |= this_kwargs
 
             return this.function(self, *args, **kwargs)
 
         return _wrapper  # type: ignore
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R_co:
         return self.__get__(None, self)(*args, **kwargs)  # type: ignore
 
     @property
@@ -455,7 +443,7 @@ class classproperty(Generic[P, R, T, T0, P0]):
 
         self.doc = doc
 
-    def _wrap(self, func: classmethod[T1, P1, R1] | Callable[P1, R1]) -> classmethod[T1, P1, R1]:
+    def _wrap(self, func: classmethod[T1, P1, R1] | Callable[P1, R1] | Callable[..., R1]) -> classmethod[T1, P1, R1]:
         if not isinstance(func, (classmethod, staticmethod)):
             func = classmethod(func)  # type: ignore
 
@@ -490,7 +478,7 @@ class classproperty(Generic[P, R, T, T0, P0]):
         else:
             type_ = type(__obj)
 
-        return self.fset.__get__(__obj, type_)(__value)
+        return self.fset.__get__(__obj, type_)(__value)  # type: ignore[call-arg]
 
     def __delete__(self, __obj: Any) -> None:
         from ..exceptions import CustomError
