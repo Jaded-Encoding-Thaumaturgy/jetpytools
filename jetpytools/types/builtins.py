@@ -20,8 +20,12 @@ __all__ = [
     'SimpleByteData', 'SimpleByteDataArray',
     'ByteData',
 
-    'KwargsT'
+    'KwargsT',
+
+    'Self'
 ]
+
+Self = TypeVar('Self')
 
 Nb = TypeVar('Nb', float, int)
 
