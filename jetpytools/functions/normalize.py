@@ -93,11 +93,13 @@ def flatten(items: Any) -> Iterator[Any]:
             yield val
 
 
-def normalize_range(ranges: SoftRange, /) -> Iterable[int]:
+def normalize_range(ranges: SoftRange, /, exclusive: bool = False) -> Sequence[int]:
     """
     Normalize ranges represented by a tuple to an iterable of frame numbers.
 
     :param ranges:      Ranges to normalize.
+    :param exclusive:   Whether to use exclusive (Python-style) ranges.
+                        Defaults to False.
 
     :return:            List of positive frame ranges.
     """
@@ -109,12 +111,12 @@ def normalize_range(ranges: SoftRange, /) -> Iterable[int]:
         start, stop = ranges
         step = -1 if stop < start else 1
 
-        return range(start, stop + step, step)
+        return range(start, stop + (not exclusive * step), step)
 
     return ranges
 
 
-def normalize_list_to_ranges(flist: Iterable[int], min_length: int = 0) -> list[StrictRange]:
+def normalize_list_to_ranges(flist: Iterable[int], min_length: int = 0, exclusive: bool = False) -> list[StrictRange]:
     flist2 = list[list[int]]()
     flist3 = list[int]()
 
@@ -135,20 +137,20 @@ def normalize_list_to_ranges(flist: Iterable[int], min_length: int = 0) -> list[
 
     return list(zip(
         [i[0] for i in flist4],
-        [i[-1] for j, i in enumerate(flist4)]
+        [i[-1] + exclusive for i in flist4]
     ))
 
 
-def normalize_ranges_to_list(ranges: Iterable[SoftRange]) -> list[int]:
+def normalize_ranges_to_list(ranges: Iterable[SoftRange], exclusive: bool = False) -> list[int]:
     out = list[int]()
 
     for srange in ranges:
-        out.extend(normalize_range(srange))
+        out.extend(normalize_range(srange, exclusive))
 
     return out
 
 
-def normalize_ranges(ranges: SoftRangeN | SoftRangesN, end: int) -> list[StrictRange]:
+def normalize_ranges(ranges: SoftRangeN | SoftRangesN, length: int, exclusive: bool = False) -> list[StrictRange]:
     """
     Normalize ranges to a list of positive ranges.
 
@@ -160,23 +162,25 @@ def normalize_ranges(ranges: SoftRangeN | SoftRangesN, end: int) -> list[StrictR
 
     .. code-block:: python
 
-        >>> normalize_ranges((None, None), end=1000)
+        >>> normalize_ranges((None, None), length=1000)
         [(0, 999)]
-        >>> normalize_ranges((24, -24), end=1000)
+        >>> normalize_ranges((24, -24), length=1000)
         [(24, 975)]
-        >>> normalize_ranges([(24, 100), (80, 150)], end=1000)
+        >>> normalize_ranges([(24, 100), (80, 150)], length=1000)
         [(24, 150)]
 
 
-    :param franges:     Frame range or list of frame ranges.
-    :param end:         End number.
+    :param ranges:      Frame range or list of frame ranges.
+    :param length:      Number of frames.
+    :param exclusive:   Whether to use exclusive (Python-style) ranges.
+                        Defaults to False.
 
     :return:            List of positive frame ranges.
     """
 
     ranges = [ranges] if is_soft_range_n(ranges) else ranges
 
-    out = []
+    out = list[tuple[int, int]]()
 
     for r in ranges:
         if r is None:
@@ -187,30 +191,33 @@ def normalize_ranges(ranges: SoftRangeN | SoftRangesN, end: int) -> list[StrictR
             if start is None:
                 start = 0
             if endd is None:
-                endd = end - 1
+                endd = length - (not exclusive)
         else:
             start = r
-            endd = r
+            endd = r + exclusive
 
         if start < 0:
-            start = end - 1 + start
+            start = length + start
 
-        if endd < 0:
-            endd = end - 1 + endd
+        if endd <= 0:
+            endd = length + endd
 
         out.append((start, endd))
 
-    return normalize_list_to_ranges([
-        x for start, endd in out for x in range(start, endd + 1)
-    ])
+    return normalize_list_to_ranges(
+        [x for start, endd in out for x in range(start, endd + (not exclusive))],
+        exclusive=exclusive
+    )
 
 
-def invert_ranges(ranges: SoftRangeN | SoftRangesN, enda: int, endb: int | None) -> list[StrictRange]:
-    norm_ranges = normalize_ranges(ranges, enda if endb is None else endb)
+def invert_ranges(
+    ranges: SoftRangeN | SoftRangesN, lengtha: int, lengthb: int | None, exclusive: bool = False
+) -> list[StrictRange]:
+    norm_ranges = normalize_ranges(ranges, lengtha if lengthb is None else lengthb, exclusive)
 
-    b_frames = {*normalize_ranges_to_list(norm_ranges)}
+    b_frames = {*normalize_ranges_to_list(norm_ranges, exclusive)}
 
-    return normalize_list_to_ranges({*range(enda)} - b_frames)
+    return normalize_list_to_ranges({*range(lengtha)} - b_frames, exclusive=exclusive)
 
 
 def norm_func_name(func_name: SupportsString | Callable[..., Any]) -> str:
