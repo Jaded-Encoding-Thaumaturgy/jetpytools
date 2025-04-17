@@ -187,25 +187,24 @@ def normalize_ranges(ranges: SoftRangeN | SoftRangesN, length: int, exclusive: b
             r = (None, None)
 
         if isinstance(r, tuple):
-            start, endd = r
+            start, end = r
             if start is None:
                 start = 0
-            if endd is None:
-                endd = length - (not exclusive)
+            if end is None:
+                end = length - (not exclusive)
         else:
             start = r
-            endd = r + exclusive
+            end = r + exclusive
 
         if start < 0:
             start = length + start
 
-        if endd <= 0:
-            endd = length + endd
+        if end <= 0:
+            end = length + end
 
-        out.append((start, endd))
-
+        out.append((start, end))
     return normalize_list_to_ranges(
-        [x for start, endd in out for x in range(start, endd + (not exclusive))],
+        [x for start, end in out for x in range(start, end + (not exclusive))],
         exclusive=exclusive
     )
 
