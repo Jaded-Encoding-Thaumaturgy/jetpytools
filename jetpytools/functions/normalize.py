@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from fractions import Fraction
+import sys
 from typing import Any, Callable, Iterable, Iterator, Sequence, overload
 
 from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, T, is_soft_range_n
+from ..exceptions import CustomOverflowError
 
 __all__ = [
     'normalize_seq',
@@ -150,7 +152,13 @@ def normalize_ranges_to_list(ranges: Iterable[SoftRange], exclusive: bool = Fals
     return out
 
 
-def normalize_ranges(ranges: SoftRangeN | SoftRangesN, length: int, exclusive: bool = False) -> list[StrictRange]:
+def normalize_ranges(
+    ranges: SoftRangeN | SoftRangesN,
+    length: int,
+    exclusive: bool = False,
+    *,
+    strict: bool = True
+) -> list[StrictRange]:
     """
     Normalize ranges to a list of positive ranges.
 
@@ -174,13 +182,16 @@ def normalize_ranges(ranges: SoftRangeN | SoftRangesN, length: int, exclusive: b
     :param length:      Number of frames.
     :param exclusive:   Whether to use exclusive (Python-style) ranges.
                         Defaults to False.
+    :param strict:      Whether to enforce strict checking for out-of-range values.
 
     :return:            List of positive frame ranges.
     """
+    from ..utils import clamp
 
     ranges = [ranges] if is_soft_range_n(ranges) else ranges
 
     out = list[tuple[int, int]]()
+    exceptions = list[Exception]()
 
     for r in ranges:
         if r is None:
@@ -199,10 +210,50 @@ def normalize_ranges(ranges: SoftRangeN | SoftRangesN, length: int, exclusive: b
         if start < 0:
             start = length + start
 
-        if end <= 0:
-            end = length + end
+        if end < 0:
+            end = length + end - (not exclusive)
+
+        # Always throws an error if start and end are negative
+        # or higher than length
+        # or start is higher than end (likely mismatched)
+        if any([
+            start < 0 and end < 0,
+            start >= length and end - (not exclusive) > length,
+            start >= end + (not exclusive),
+        ]):
+            exception = CustomOverflowError(
+                f"Range `{r}` with length `{length}` could not be normalized!", normalize_ranges
+            )
+            exceptions.append(exception)
+            continue
+
+        if strict:
+            if start < 0:
+                exception = CustomOverflowError(
+                    f"Start frame `{start}` in range `{r}` with length `{length}` could not be normalized!",
+                    normalize_ranges
+                )
+                exceptions.append(exception)
+                continue
+            if end - (not exclusive) > length:
+                exception = CustomOverflowError(
+                    f"End frame `{end}` in range `{r}` with length `{length}` could not be normalized!",
+                    normalize_ranges
+                )
+                exceptions.append(exception)
+                continue
+        else:
+            start = clamp(start, 0, length - 1)
+            end = clamp(end, int(exclusive), length - (not exclusive))
 
         out.append((start, end))
+
+    if exceptions:
+        if sys.version_info >= (3, 11):
+            raise ExceptionGroup("Multiple exceptions occurred!", exceptions)  # noqa: F821
+
+        raise Exception(exceptions)
+
     return normalize_list_to_ranges(
         [x for start, end in out for x in range(start, end + (not exclusive))],
         exclusive=exclusive
