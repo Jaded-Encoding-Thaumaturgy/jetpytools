@@ -442,7 +442,7 @@ class classproperty(Generic[T, R]):
         self.fset = self._wrap(fset) if fset is not None else fset
         self.fdel = self._wrap(fdel) if fdel is not None else fdel
 
-        self.doc = doc
+        self.__doc__ = doc
 
     def _wrap(self, func: Callable[..., R1] | classmethod[T, P1, R1]) -> classmethod[T, P1, R1]:
         if not isinstance(func, classmethod):
