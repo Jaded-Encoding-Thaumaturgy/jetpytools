@@ -450,47 +450,27 @@ class classproperty(Generic[T, R]):
 
         return func
 
-    def getter(self, __fget: classmethod[T, P, R] | Callable[P1, R1]) -> classproperty[P1, R1, T, T0, P0]:
-        self.fget = self._wrap(__fget)  # type: ignore
-        return self  # type: ignore
-
-    def setter(self, __fset: classmethod[T1, P, None] | Callable[[T1, T2], None]) -> classproperty[P, R, T1, T2, P0]:
-        self.fset = self._wrap(__fset)  # type: ignore
-        return self  # type: ignore
-
-    def deleter(self, __fdel: classmethod[T1, P1, None] | Callable[P1, None]) -> classproperty[P, R, T, T0, P1]:
-        self.fdel = self._wrap(__fdel)  # type: ignore
-        return self  # type: ignore
-
-    def __get__(self, __obj: Any, __type: type | None = None) -> R:
+    def __get__(self, __obj: T | None, __type: type | None = None) -> R:
         if __type is None:
             __type = type(__obj)
 
-        return self.fget.__get__(__obj, __type)()  # type: ignore
+        return self.fget.__get__(__obj, __type)()
 
-    def __set__(self, __obj: Any, __value: Any) -> None:
-        from ..exceptions import CustomError
-
+    def __set__(self, __obj: T, __value: Any) -> None:
         if not self.fset:
-            raise CustomError[AttributeError]("Can't set attribute")
+            raise AttributeError(
+                f'classproperty with getter "{self.__name__}" of "{__obj.__class__.__name__}" object has no setter.'
+            )
 
-        if isclass(__obj):
-            type_, __obj = __obj, None
-        else:
-            type_ = type(__obj)
+        self.fset.__get__(None, type(__obj))(__value)
 
-        return self.fset.__get__(__obj, type_)(__value)  # type: ignore[call-arg]
-
-    def __delete__(self, __obj: Any) -> None:
-        from ..exceptions import CustomError
-
+    def __delete__(self, __obj: T) -> None:
         if not self.fdel:
-            raise CustomError[AttributeError]("Can't delete attribute")
+            raise AttributeError(
+                f'classproperty with getter "{self.__name__}" of "{__obj.__class__.__name__}" object has no deleter.'
+            )
 
-        if isclass(__obj):
-            type_, __obj = __obj, None
-        else:
-            type_ = type(__obj)
+        self.fdel.__get__(None, type(__obj))()
 
         return self.fdel.__delete__(__obj, type_)(__obj)  # type: ignore
 
