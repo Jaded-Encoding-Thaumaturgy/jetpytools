@@ -472,8 +472,7 @@ class classproperty(Generic[T, R]):
 
         self.fdel.__get__(None, type(__obj))()
 
-        return self.fdel.__delete__(__obj, type_)(__obj)  # type: ignore
-
+    @property
     def __name__(self) -> str:
         return self.fget.__name__
 
