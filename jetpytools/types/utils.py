@@ -417,19 +417,6 @@ class classproperty(Generic[T, R]):
 
     __isabstractmethod__: bool = False
 
-    class metaclass(type):
-        """This must be set for the decorator to work."""
-
-        def __setattr__(self, key: str, value: Any) -> None:
-            if key in self.__dict__:
-                obj = self.__dict__.get(key)
-
-                if obj and isinstance(obj, classproperty):
-                    obj.__set__(self, value)
-                    return
-
-            super(classproperty.metaclass, self).__setattr__(key, value)
-
     def __init__(
         self,
         fget: Callable[[type[T]], R] | classmethod[T, ..., R],
