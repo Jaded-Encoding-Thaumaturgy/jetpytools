@@ -411,7 +411,7 @@ def get_subclasses(family: type[T], exclude: Sequence[type[T]] = []) -> list[typ
     return list(set(_subclasses(family)))
 
 
-class classproperty(Generic[P, R, T, T0, P0]):
+class classproperty(Generic[T, R]):
     """
     Make a class property. A combination between classmethod and property.
     """
@@ -433,9 +433,9 @@ class classproperty(Generic[P, R, T, T0, P0]):
 
     def __init__(
         self,
-        fget: classmethod[T, P, R] | Callable[P, R],
-        fset: classmethod[T, P, None] | Callable[[T, T0], None] | None = None,
-        fdel: classmethod[T, P1, None] | Callable[P1, None] | None = None,
+        fget: Callable[[type[T]], R] | classmethod[T, ..., R],
+        fset: Callable[[type[T], R], None] | classmethod[T, Concatenate[R, ...], None] | None = None,
+        fdel: Callable[[type[T]], None] | classmethod[T, ..., None] | None = None,
         doc: str | None = None,
     ) -> None:
         self.fget = self._wrap(fget)
@@ -444,11 +444,11 @@ class classproperty(Generic[P, R, T, T0, P0]):
 
         self.doc = doc
 
-    def _wrap(self, func: classmethod[T1, P1, R1] | Callable[P1, R1] | Callable[..., R1]) -> classmethod[T1, P1, R1]:
-        if not isinstance(func, (classmethod, staticmethod)):
-            func = classmethod(func)  # type: ignore
+    def _wrap(self, func: Callable[..., R1] | classmethod[T, P1, R1]) -> classmethod[T, P1, R1]:
+        if not isinstance(func, classmethod):
+            func = classmethod(func)
 
-        return func  # type: ignore
+        return func
 
     def getter(self, __fget: classmethod[T, P, R] | Callable[P1, R1]) -> classproperty[P1, R1, T, T0, P0]:
         self.fget = self._wrap(__fget)  # type: ignore
