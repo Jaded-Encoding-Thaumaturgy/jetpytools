@@ -72,10 +72,6 @@ class CustomErrorMeta(type):
 
         return exception
 
-    if TYPE_CHECKING:
-        def __getitem__(self, exception: type[Exception]) -> CustomError:
-            ...
-
 
 SelfCErrorMeta = TypeVar('SelfCErrorMeta', bound=CustomErrorMeta)
 
@@ -102,17 +98,11 @@ class CustomError(ExceptionT, metaclass=CustomErrorMeta):
         super().__init__(message)
 
     def __class_getitem__(cls, exception: str | type[ExceptionT] | ExceptionT) -> CustomError:
-        if isinstance(exception, str):
-            class inner_exception(cls):  # type: ignore
-                ...
-        else:
-            if not issubclass(exception, type):  # type: ignore
-                exception = exception.__class__  # type: ignore
+        from warnings import warn
 
-            class inner_exception(cls, exception):  # type: ignore
-                ...
+        warn("Custom error is not subscriptable anymore. Don't use it", DeprecationWarning)
 
-        return CustomErrorMeta.setup_exception(inner_exception, exception)  # type: ignore
+        return cls()
 
     def __call__(
         self,
