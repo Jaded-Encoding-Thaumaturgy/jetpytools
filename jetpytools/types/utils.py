@@ -3,7 +3,6 @@ from __future__ import annotations
 from functools import partial, wraps
 from inspect import Signature
 from inspect import _empty as empty_param
-from inspect import isclass
 from typing import (
     TYPE_CHECKING, Any, Callable, Concatenate, Generator, Generic, Iterable, Iterator, Mapping, NoReturn, Protocol,
     Sequence, TypeVar, cast, overload
