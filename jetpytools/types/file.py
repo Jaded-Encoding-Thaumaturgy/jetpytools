@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import fnmatch
 import shutil
-
-from os import PathLike, listdir, path, walk
+from os import X_OK, PathLike, access, listdir, path, walk
 from pathlib import Path
 from sys import version_info
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, TypeAlias, Union
@@ -25,6 +24,7 @@ __all__ = [
 
     'SPath', 'SPathLike'
 ]
+
 
 FileDescriptor: TypeAlias = int
 
@@ -60,6 +60,7 @@ OpenBinaryMode: TypeAlias = OpenBinaryModeUpdating | OpenBinaryModeReading | Ope
 
 class SPath(Path):
     """Modified version of pathlib.Path"""
+
     if version_info < (3, 12):
         _flavour = type(Path())._flavour  # type: ignore
 
@@ -194,6 +195,11 @@ class SPath(Path):
             return self.stat().st_size
 
         return sum(f.stat().st_size for f in self.rglob('*') if f.is_file())
+
+    def is_executable(self) -> bool:
+        """Check if the path is executable."""
+
+        return access(self.to_str(), X_OK)
 
 
 SPathLike = Union[str, PathLike[str], Path, SPath]
