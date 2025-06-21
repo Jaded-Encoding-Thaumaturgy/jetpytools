@@ -148,7 +148,7 @@ def spline_coeff(
     s += (py[j] / h - h * matrix[j][length] / 6) * (x - px[i])
     s -= (py[i] / h - h * matrix[i][length] / 6) * (x - px[j])
 
-    return s
+    return float(s)
 
 
 def ndigits(num: Nb) -> int:
