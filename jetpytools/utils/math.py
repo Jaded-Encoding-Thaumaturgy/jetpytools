@@ -132,6 +132,8 @@ def spline_coeff(
                 for k in range(i, length + 1):
                     matrix[j][k] -= a * matrix[i][k]
 
+    i = 0
+
     for i in range(length + 1):
         if x >= px[i] and x <= px[i + 1]:
             break
