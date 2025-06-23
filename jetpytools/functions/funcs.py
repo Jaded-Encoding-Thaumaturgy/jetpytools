@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable, Concatenate, overload
 from inspect import signature
 
-from ..exceptions import CustomRuntimeError
+from ..exceptions import CustomRuntimeError, CustomValueError
 from ..types import MISSING, KwargsT, MissingT, P, R, T
 
 __all__ = [
@@ -188,8 +188,8 @@ def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any] | None = None
 
     try:
         sig = signature(func)
-    except ValueError:
-        return dict(filtered_kwargs)
+    except Exception as e:
+        raise CustomValueError(e.args[0], filter_kwargs, func) from e
 
     param_names = {name for name, param in sig.parameters.items() if param.kind != param.VAR_KEYWORD}
 
