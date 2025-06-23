@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from typing import Any, Callable, Concatenate, overload
+from inspect import signature
 
-from ..exceptions import CustomRuntimeError
+from ..exceptions import CustomRuntimeError, CustomValueError
 from ..types import MISSING, KwargsT, MissingT, P, R, T
 
 __all__ = [
-    'iterate', 'fallback', 'kwargs_fallback'
+    'iterate', 'fallback', 'kwargs_fallback', 'filter_kwargs'
 ]
 
 
@@ -150,3 +151,46 @@ def kwargs_fallback(  # type: ignore
     """Utility function to return a fallback value from kwargs if value was not found or is None."""
 
     return fallback(value, kwargs[0].get(kwargs[1], None), *fallbacks, default=default)
+
+
+@overload
+def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any]) -> dict[str, Any]:
+    ...
+
+
+@overload
+def filter_kwargs(func: Callable[..., Any], **kwargs: Any) -> dict[str, Any]:
+    ...
+
+
+def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any] | None = None, **kw: Any) -> dict[str, Any]:
+    """
+    Filter kwargs to only include parameters that match the callable's signature, ignoring **kwargs.
+
+    Examples:
+
+        >>> def my_func(a: int, b: str, c: bool = True):
+        ...     return a, b, c
+        >>> filter_kwargs(my_func, a=1, b="hello", c=False, d="extra")
+        {'a': 1, 'b': 'hello', 'c': False}
+        >>> filter_kwargs(my_func, {"a": 1, "b": "hello", "c": False, "d": "extra"})
+        {'a': 1, 'b': 'hello', 'c': False}
+
+    :param func:        The callable to filter kwargs for.
+    :param kwargs:      Dictionary of keyword arguments to filter.
+    :param **kw:        Keyword arguments to filter (used when kwargs is None).
+
+    :return:            A dictionary containing only the kwargs that match the callable's parameters.
+    """
+
+    if not (filtered_kwargs := fallback(kwargs, kw)):
+        return {}
+
+    try:
+        sig = signature(func)
+    except Exception as e:
+        raise CustomValueError(e.args[0], filter_kwargs, func) from e
+
+    param_names = {name for name, param in sig.parameters.items() if param.kind != param.VAR_KEYWORD}
+
+    return {name: value for name, value in filtered_kwargs.items() if name in param_names}
