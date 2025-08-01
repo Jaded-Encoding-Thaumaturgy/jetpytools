@@ -5,9 +5,13 @@ from typing import (
     Any, Callable, Iterable, Protocol, SupportsFloat, SupportsIndex, TypeAlias, TypeVar, overload, runtime_checkable
 )
 
-from .builtins import T0, T1, T2, T_contra
+from .builtins import T0, T1, T2, T_contra, T_co
 
 __all__ = [
+    "SupportsAdd",
+    "SupportsRAdd",
+    "SupportsSumNoDefaultT",
+    
     'SupportsTrunc',
 
     'SupportsString',
@@ -28,6 +32,22 @@ __all__ = [
 
 _KT = TypeVar('_KT')
 _VT_co = TypeVar('_VT_co', covariant=True)
+
+
+@runtime_checkable
+class SupportsAdd(Protocol[T_contra, T_co]):
+    def __add__(self, x: T_contra, /) -> T_co: ...
+
+
+@runtime_checkable
+class SupportsRAdd(Protocol[T_contra, T_co]):
+    def __radd__(self, x: T_contra, /) -> T_co: ...
+
+
+class _SupportsSumWithNoDefaultGiven(SupportsAdd[Any, Any], SupportsRAdd[int, Any], Protocol): ...
+
+
+SupportsSumNoDefaultT = TypeVar("SupportsSumNoDefaultT", bound=_SupportsSumWithNoDefaultGiven)
 
 
 @runtime_checkable
