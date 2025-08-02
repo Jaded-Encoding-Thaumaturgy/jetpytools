@@ -34,7 +34,7 @@ class CustomErrorMeta(type):
     """Custom base exception meta class."""
 
     def __new__(cls: type[SelfCErrorMeta], *args: Any) -> SelfCErrorMeta:
-        return CustomErrorMeta.setup_exception(type.__new__(cls, *args))  # type: ignore
+        return CustomErrorMeta.setup_exception(type.__new__(cls, *args))  # pyright: ignore[reportReturnType]
 
     @staticmethod
     def setup_exception(exception: SelfCErrorMeta, override: str | ExceptionError | None = None) -> SelfCErrorMeta:

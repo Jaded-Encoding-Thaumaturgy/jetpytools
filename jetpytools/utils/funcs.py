@@ -14,9 +14,9 @@ def copy_func(f: Callable[..., Any]) -> FunctionType:
 
     try:
         g = FunctionType(f.__code__, f.__globals__, name=f.__name__, argdefs=f.__defaults__, closure=f.__closure__)
-        g = update_wrapper(g, f)  # type: ignore
-        g.__kwdefaults__ = f.__kwdefaults__
-        return g
+        g = update_wrapper(g, f)
+        g.__kwdefaults__ = f.__kwdefaults__  # type: ignore
+        return g  # type: ignore
     except BaseException:  # for builtins
         return f  # type: ignore
 

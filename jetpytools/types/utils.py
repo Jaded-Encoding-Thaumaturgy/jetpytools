@@ -172,7 +172,7 @@ class inject_self_base(Generic[T_co, P, R_co]):
             else:
                 obj = class_obj
 
-            return self.function(obj, *args, **kwargs)
+            return self.function(obj, *args, **kwargs) # type: ignore
 
         return _wrapper
 
