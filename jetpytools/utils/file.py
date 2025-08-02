@@ -66,11 +66,10 @@ def get_user_data_dir() -> Path:
                 buf = buf2
 
         return Path(path.normpath(buf.value))
-
-    if sys.platform == "darwin":  # type: ignore[unreachable]
+    elif sys.platform == "darwin":
         return Path(path.expanduser("~/Library/Application Support/"))
-
-    return Path(getenv("XDG_DATA_HOME", path.expanduser("~/.local/share")))
+    else:
+        return Path(getenv("XDG_DATA_HOME", path.expanduser("~/.local/share")))
 
 
 def check_perms(

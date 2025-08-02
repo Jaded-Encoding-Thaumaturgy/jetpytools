@@ -47,6 +47,4 @@ jobs:
           uv sync --locked
 
       - name: Running mypy
-        # Type check as if we're Windows to satisfy the `type: ignore` in
-        # `get_user_data_dir()`.
-        run: uv run mypy --platform win32 jetpytools tests
+        run: uv run mypy jetpytools tests
