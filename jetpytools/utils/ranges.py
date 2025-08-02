@@ -6,20 +6,17 @@ from typing import Iterable, overload
 from ..exceptions import CustomIndexError
 from ..types import T0, T
 
-__all__ = [
-    "interleave_arr",
-    "ranges_product"
-]
+__all__ = ["interleave_arr", "ranges_product"]
 
 
 @overload
-def ranges_product(range0: range | int, range1: range | int, /) -> Iterable[tuple[int, int]]:
-    ...
+def ranges_product(range0: range | int, range1: range | int, /) -> Iterable[tuple[int, int]]: ...
 
 
 @overload
-def ranges_product(range0: range | int, range1: range | int, range2: range | int, /) -> Iterable[tuple[int, int, int]]:
-    ...
+def ranges_product(
+    range0: range | int, range1: range | int, range2: range | int, /
+) -> Iterable[tuple[int, int, int]]: ...
 
 
 def ranges_product(*_iterables: range | int) -> Iterable[tuple[int, ...]]:

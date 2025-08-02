@@ -16,7 +16,7 @@ __all__ = [
     "ndigits",
     "next_power_of_2",
     "next_power_of_y",
-    "spline_coeff"
+    "spline_coeff",
 ]
 
 
@@ -35,7 +35,7 @@ def clamp_arr(vals: Sequence[Nb], min_val: Nb, max_val: Nb) -> list[Nb]:
 def cround(x: float, *, eps: float = 1e-6) -> int:
     """Rounding function that accounts for float's imprecision."""
 
-    return round(x + (eps if x > 0. else - eps))
+    return round(x + (eps if x > 0.0 else -eps))
 
 
 def mod_x(val: int | float, x: int) -> int:
@@ -77,7 +77,7 @@ def next_power_of_2(x: float) -> int:
         return x
 
     while x & (x - 1) > 0:
-        x &= (x - 1)
+        x &= x - 1
 
     return x << 1
 
@@ -92,9 +92,19 @@ def next_power_of_y(x: float, y: int) -> int:
 
 
 def spline_coeff(
-    x: int, coordinates: list[tuple[float, float]] = [
-        (0, 0), (0.5, 0.1), (1, 0.6), (2, 0.9), (2.5, 1), (3, 1.1), (3.5, 1.15), (4, 1.2), (8, 1.25), (255, 1.5)
-    ]
+    x: int,
+    coordinates: list[tuple[float, float]] = [
+        (0, 0),
+        (0.5, 0.1),
+        (1, 0.6),
+        (2, 0.9),
+        (2.5, 1),
+        (3, 1.1),
+        (3.5, 1.15),
+        (4, 1.2),
+        (8, 1.25),
+        (255, 1.5),
+    ],
 ) -> float:
     """Get spline coefficient of an index and coordinates."""
 

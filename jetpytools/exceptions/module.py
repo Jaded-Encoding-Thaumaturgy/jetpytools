@@ -5,19 +5,18 @@ from typing import Any
 from ..types import FuncExceptT, SupportsString
 from .base import CustomError
 
-__all__ = [
-    "CustomImportError",
-    "DependencyNotFoundError"
-]
+__all__ = ["CustomImportError", "DependencyNotFoundError"]
 
 
 class CustomImportError(CustomError, ImportError):
     """Raised when there's a general import error."""
 
     def __init__(
-        self, func: FuncExceptT, package: str | ImportError,
+        self,
+        func: FuncExceptT,
+        package: str | ImportError,
         message: SupportsString = "Import failed for package '{package}'!",
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """
         :param func:        Function this error was raised from.
@@ -32,8 +31,10 @@ class DependencyNotFoundError(CustomImportError):
     """Raised when there's a missing optional dependency."""
 
     def __init__(
-        self, func: FuncExceptT, package: str | ImportError,
+        self,
+        func: FuncExceptT,
+        package: str | ImportError,
         message: SupportsString = "Missing dependency '{package}'!",
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__(func, package, message, **kwargs)

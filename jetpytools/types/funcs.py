@@ -8,19 +8,15 @@ from typing_extensions import Self, TypeIs
 from .builtins import P, T
 from .supports import SupportsString
 
-__all__ = [
-    "Sentinel",
-    "SentinelT",
-    "StrList"
-]
+__all__ = ["Sentinel", "SentinelT", "StrList"]
 
 
 class StrList(list[SupportsString]):
     """Custom class for representing a recursively "stringable" list."""
 
     if TYPE_CHECKING:
-        def __init__(self, iterable: Iterable[SupportsString | None] | None = ..., /) -> None:
-            ...
+
+        def __init__(self, iterable: Iterable[SupportsString | None] | None = ..., /) -> None: ...
 
     @property
     def string(self) -> str:
@@ -32,12 +28,7 @@ class StrList(list[SupportsString]):
     def __str__(self) -> str:
         from ..functions import flatten
 
-        return " ".join(
-            filter(
-                None,
-                (str(x).strip() for x in flatten(self) if x is not None)
-            )
-        )
+        return " ".join(filter(None, (str(x).strip() for x in flatten(self) if x is not None)))
 
     def __add__(self, x: list[SupportsString]) -> StrList:  # type: ignore[override]
         return StrList(super().__add__(x))

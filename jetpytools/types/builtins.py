@@ -39,7 +39,7 @@ __all__ = [
     "T0_co",
     "T1_co",
     "T_co",
-    "T_contra"
+    "T_contra",
 ]
 
 Nb = TypeVar("Nb", float, int)

@@ -11,7 +11,8 @@ if sys.version_info < (3, 11):
 
 
 def assert_excinfo_group_contains(
-    excinfo: pytest.ExceptionInfo, exception: type[Exception]  # type: ignore
+    excinfo: pytest.ExceptionInfo,# type: ignore
+    exception: type[Exception],
 ) -> None:
     if sys.version_info < (3, 11):
         assert isinstance(excinfo.value, Exception)

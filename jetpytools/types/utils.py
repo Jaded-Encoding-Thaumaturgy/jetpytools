@@ -36,9 +36,10 @@ __all__ = [
     "get_subclasses",
     "inject_kwargs_params",
     "inject_self",
-    "to_singleton"
+    "to_singleton",
 ]
 # ruff: noqa: N801
+
 
 class copy_signature(Generic[F0]):
     """
@@ -78,8 +79,7 @@ class copy_signature(Generic[F0]):
 class injected_self_func(Protocol[T_co, P, R_co]):
     @overload
     @staticmethod
-    def __call__(*args: P.args, **kwargs: P.kwargs) -> R_co:
-        ...
+    def __call__(*args: P.args, **kwargs: P.kwargs) -> R_co: ...
 
     @overload
     @staticmethod
@@ -88,8 +88,7 @@ class injected_self_func(Protocol[T_co, P, R_co]):
 
     @overload
     @staticmethod
-    def __call__(cls: type[T_co], *args: P.args, **kwargs: P.kwargs) -> R_co:
-        ...
+    def __call__(cls: type[T_co], *args: P.args, **kwargs: P.kwargs) -> R_co: ...
 
 
 self_objects_cache = dict[Any, Any]()
@@ -124,7 +123,9 @@ class inject_self_base(Generic[T_co, P, R_co]):
         self.clean_kwargs = False
 
     def __get__(
-        self, class_obj: type[T] | T | None, class_type: type[T | type[T]] | Any  # type: ignore[valid-type]
+        self,
+        class_obj: type[T] | T | None,
+        class_type: type[T | type[T]] | Any,  # type: ignore[valid-type]
     ) -> injected_self_func[T_co, P, R_co]:
         if not self.signature or not self.first_key:
             self.signature = Signature.from_callable(self.function, eval_str=True)
@@ -138,22 +139,16 @@ class inject_self_base(Generic[T_co, P, R_co]):
                         "This function hasn't got any kwargs!", "inject_self.init_kwargs", self.function
                     )
 
-                self.init_kwargs = list[str](
-                    k for k, x in self.signature.parameters.items() if x.kind != 4
-                )
+                self.init_kwargs = list[str](k for k, x in self.signature.parameters.items() if x.kind != 4)
 
         @wraps(self.function)
         def _wrapper(*args: Any, **kwargs: Any) -> Any:
-            first_arg = (args[0] if args else None) or (
-                kwargs.get(self.first_key, None) if self.first_key else None
-            )
+            first_arg = (args[0] if args else None) or (kwargs.get(self.first_key, None) if self.first_key else None)
 
-            if (
-                first_arg and (
-                    (is_obj := isinstance(first_arg, class_type))
-                    or isinstance(first_arg, type(class_type))
-                    or first_arg is class_type
-                )
+            if first_arg and (
+                (is_obj := isinstance(first_arg, class_type))
+                or isinstance(first_arg, type(class_type))
+                or first_arg is class_type
             ):
                 obj = first_arg if is_obj else first_arg()
                 if args:
@@ -199,6 +194,7 @@ class inject_self_base(Generic[T_co, P, R_co]):
             inj.args = args
             inj.kwargs = kwargs
             return inj  # type: ignore
+
         return _wrapper
 
 
@@ -215,9 +211,7 @@ class inject_self(inject_self_base[T_co, P, R_co]):
             def __init__(self, function: Callable[[T1_co], R1_co]) -> None:
                 self.function = inject_self(function)
 
-            def __get__(
-                self, class_obj: type[T1_co] | T1_co | None, class_type: type[T1_co] | T1_co
-            ) -> R1_co:
+            def __get__(self, class_obj: type[T1_co] | T1_co | None, class_type: type[T1_co] | T1_co) -> R1_co:
                 return self.function.__get__(class_obj, class_type)()
 
     class init_kwargs(inject_self_base[T0_co, P0, R0_co]):
@@ -237,9 +231,7 @@ class inject_self(inject_self_base[T_co, P, R_co]):
         def __init__(self, function: Callable[[T0_co], R0_co]) -> None:
             self.function = inject_self(function)
 
-        def __get__(
-            self, class_obj: type[T0_co] | T0_co | None, class_type: type[T0_co] | T0_co
-        ) -> R0_co:
+        def __get__(self, class_obj: type[T0_co] | T0_co | None, class_type: type[T0_co] | T0_co) -> R0_co:
             return self.function.__get__(class_obj, class_type)()
 
 
@@ -258,9 +250,7 @@ class inject_kwargs_params_base(Generic[T_co, P, R_co]):
 
         self.signature = None
 
-    def __get__(
-        self, class_obj: T, class_type: type[T]
-    ) -> inject_kwargs_params_base_func[T_co, P, R_co]:
+    def __get__(self, class_obj: T, class_type: type[T]) -> inject_kwargs_params_base_func[T_co, P, R_co]:
         if not self.signature:
             self.signature = Signature.from_callable(self.function, eval_str=True)
 
@@ -337,21 +327,20 @@ class inject_kwargs_params_base(Generic[T_co, P, R_co]):
 
 
 if TYPE_CHECKING:  # love you mypy...
+
     class _add_to_kwargs:
-        def __call__(self, func: F1) -> F1:
-            ...
+        def __call__(self, func: F1) -> F1: ...
 
     class _inject_kwargs_params:
-        def __call__(self, func: F0) -> F0:
-            ...
+        def __call__(self, func: F0) -> F0: ...
 
         add_to_kwargs = _add_to_kwargs()
 
     inject_kwargs_params = _inject_kwargs_params()
 else:
+
     class inject_kwargs_params(Generic[T, P, R], inject_kwargs_params_base[T, P, R]):
-        class add_to_kwargs(Generic[T0, P0, R0], inject_kwargs_params_base[T0, P0, R0]):
-            ...
+        class add_to_kwargs(Generic[T0, P0, R0], inject_kwargs_params_base[T0, P0, R0]): ...
 
 
 class complex_hash(Generic[T]):
@@ -364,11 +353,7 @@ class complex_hash(Generic[T]):
     def __new__(cls, class_type: T) -> T:  # type: ignore
         class inner_class_type(class_type):  # type: ignore
             def __hash__(self) -> int:
-                return complex_hash.hash(
-                    self.__class__.__name__, *(
-                        getattr(self, key) for key in self.__annotations__
-                    )
-                )
+                return complex_hash.hash(self.__class__.__name__, *(getattr(self, key) for key in self.__annotations__))
 
         return inner_class_type  # type: ignore
 
@@ -487,6 +472,7 @@ class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
         """Inherit from this class to automatically set the cache dict."""
 
         if not TYPE_CHECKING:
+
             def __new__(cls, *args: Any, **kwargs: Any) -> None:
                 try:
                     self = super().__new__(cls, *args, **kwargs)
@@ -496,28 +482,26 @@ class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
                 return self
 
     if TYPE_CHECKING:
+
         def __init__(
-            self, fget: Callable[P, R_co], fset: Callable[[T, T0], None] | None = None,
-            fdel: Callable[P0, None] | None = None, doc: str | None = None,
-        ) -> None:
-            ...
+            self,
+            fget: Callable[P, R_co],
+            fset: Callable[[T, T0], None] | None = None,
+            fdel: Callable[P0, None] | None = None,
+            doc: str | None = None,
+        ) -> None: ...
 
-        def getter(self, fget: Callable[P1, R0_co]) -> cachedproperty[P1, R0_co, T, T0, P0]:
-            ...
+        def getter(self, fget: Callable[P1, R0_co]) -> cachedproperty[P1, R0_co, T, T0, P0]: ...
 
-        def setter(self, fset: Callable[[T1, T2], None]) -> cachedproperty[P, R_co, T1, T2, P0]:
-            ...
+        def setter(self, fset: Callable[[T1, T2], None]) -> cachedproperty[P, R_co, T1, T2, P0]: ...
 
-        def deleter(self, fdel: Callable[P1, None]) -> cachedproperty[P, R_co, T, T0, P1]:
-            ...
-
-    @overload
-    def __get__(self, obj: None, type_: type | None = None) -> Self:
-        ...
+        def deleter(self, fdel: Callable[P1, None]) -> cachedproperty[P, R_co, T, T0, P1]: ...
 
     @overload
-    def __get__(self, obj: object, type_: type | None = None) -> R_co:
-        ...
+    def __get__(self, obj: None, type_: type | None = None) -> Self: ...
+
+    @overload
+    def __get__(self, obj: object, type_: type | None = None) -> R_co: ...
 
     def __get__(self, obj: Any, type_: type | None = None) -> Any:
         if isinstance(self.fget, classproperty):
@@ -541,6 +525,7 @@ class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
         return cache[name]
 
     if TYPE_CHECKING:
+
         def __set__(self, obj: Any, value: R_co, /) -> None:  # type: ignore[misc]
             ...
 
@@ -549,20 +534,16 @@ class KwargsNotNone(KwargsT):
     """Remove all None objects from this kwargs dict."""
 
     if not TYPE_CHECKING:
+
         def __new__(cls, *args: Any, **kwargs: Any) -> Self:
-            return KwargsT(**{
-                key: value for key, value in KwargsT(*args, **kwargs).items()
-                if value is not None
-            })
+            return KwargsT(**{key: value for key, value in KwargsT(*args, **kwargs).items() if value is not None})
 
 
 class SingletonMeta(type):
     _instances: ClassVar[dict[type[Any], Any]] = {}
     _singleton_init: bool
 
-    def __new__(
-        cls, name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any
-    ) -> SingletonMeta:
+    def __new__(cls, name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any) -> SingletonMeta:
         return type.__new__(cls, name, bases, namespace | {"_singleton_init": kwargs.pop("init", False)})
 
     def __call__(cls, *args: Any, **kwargs: Any) -> SingletonMeta:
@@ -585,6 +566,7 @@ class to_singleton_impl:
 
     def __new__(_cls, cls: type[T]) -> T:  # type: ignore
         if _cls._add_classes:
+
             class rcls(cls, *_cls._add_classes):  # type: ignore
                 ...
         else:
@@ -603,7 +585,7 @@ class to_singleton_impl:
 
 class to_singleton(to_singleton_impl):
     class as_property(to_singleton_impl):
-        _add_classes = (property, )
+        _add_classes = (property,)
 
 
 class LinearRangeLut(Mapping[int, int]):

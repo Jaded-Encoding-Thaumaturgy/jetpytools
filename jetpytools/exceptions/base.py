@@ -17,11 +17,12 @@ __all__ = [
     "CustomPermissionError",
     "CustomRuntimeError",
     "CustomTypeError",
-    "CustomValueError"
+    "CustomValueError",
 ]
 
 
 if TYPE_CHECKING:
+
     class ExceptionError(Exception):
         __name__: str
         __qualname__: str
@@ -106,7 +107,7 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
         message: SupportsString | None | MissingT = MISSING,
         func: FuncExceptT | None | MissingT = MISSING,
         reason: SupportsString | FuncExceptT | None | MissingT = MISSING,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Self:
         """
         Copy an existing exception with defaults and instantiate a new one.
@@ -150,9 +151,7 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
             func_header = ""
 
         if self.kwargs:
-            self.kwargs = {
-                key: norm_display_name(value) for key, value in self.kwargs.items()
-            }
+            self.kwargs = {key: norm_display_name(value) for key, value in self.kwargs.items()}
 
         if self.reason:
             reason = self.reason = norm_display_name(self.reason)

@@ -26,7 +26,7 @@ __all__ = [
     "get_script_path",
     "get_user_data_dir",
     "open_file",
-    "remove_script_path_hook"
+    "remove_script_path_hook",
 ]
 
 _script_path_hooks = list[Callable[[], SPath | None]]()
@@ -74,8 +74,7 @@ def get_user_data_dir() -> Path:
 
 
 def check_perms(
-    file: FilePathType, mode: OpenTextMode | OpenBinaryMode, strict: bool = False,
-    *, func: FuncExceptT | None = None
+    file: FilePathType, mode: OpenTextMode | OpenBinaryMode, strict: bool = False, *, func: FuncExceptT | None = None
 ) -> bool:
     """
     Confirm whether the user has write/read access to a file.
@@ -103,7 +102,7 @@ def check_perms(
     for char in "rbU":
         mode_str = mode.replace(char, "")
 
-    if not mode_str: # pyright: ignore[reportPossiblyUnboundVariable]
+    if not mode_str:  # pyright: ignore[reportPossiblyUnboundVariable]
         mode_i = R_OK
     elif "x" in mode_str:
         mode_i = X_OK
@@ -135,60 +134,85 @@ def check_perms(
 
 @overload
 def open_file(
-    file: FilePathType, mode: OpenTextMode = "r", buffering: int = ...,
-    encoding: str | None = None, errors: str | None = ..., newline: str | None = ...,
-    *, func: FuncExceptT | None = None
-) -> TextIOWrapper:
-    ...
+    file: FilePathType,
+    mode: OpenTextMode = "r",
+    buffering: int = ...,
+    encoding: str | None = None,
+    errors: str | None = ...,
+    newline: str | None = ...,
+    *,
+    func: FuncExceptT | None = None,
+) -> TextIOWrapper: ...
 
 
 @overload
 def open_file(
-    file: FilePathType, mode: OpenBinaryMode, buffering: Literal[0],
-    encoding: None = None, *, func: FuncExceptT | None = None
-) -> FileIO:
-    ...
+    file: FilePathType,
+    mode: OpenBinaryMode,
+    buffering: Literal[0],
+    encoding: None = None,
+    *,
+    func: FuncExceptT | None = None,
+) -> FileIO: ...
 
 
 @overload
 def open_file(
-    file: FilePathType, mode: OpenBinaryModeUpdating, buffering: Literal[-1, 1] = ...,
-    encoding: None = None, *, func: FuncExceptT | None = None
-) -> BufferedRandom:
-    ...
+    file: FilePathType,
+    mode: OpenBinaryModeUpdating,
+    buffering: Literal[-1, 1] = ...,
+    encoding: None = None,
+    *,
+    func: FuncExceptT | None = None,
+) -> BufferedRandom: ...
 
 
 @overload
 def open_file(
-    file: FilePathType, mode: OpenBinaryModeWriting, buffering: Literal[-1, 1] = ...,
-    encoding: None = None, *, func: FuncExceptT | None = None
-) -> BufferedWriter:
-    ...
+    file: FilePathType,
+    mode: OpenBinaryModeWriting,
+    buffering: Literal[-1, 1] = ...,
+    encoding: None = None,
+    *,
+    func: FuncExceptT | None = None,
+) -> BufferedWriter: ...
 
 
 @overload
 def open_file(
-    file: FilePathType, mode: OpenBinaryModeReading, buffering: Literal[-1, 1] = ...,
-    encoding: None = None, *, func: FuncExceptT | None = None
-) -> BufferedReader:
-    ...
+    file: FilePathType,
+    mode: OpenBinaryModeReading,
+    buffering: Literal[-1, 1] = ...,
+    encoding: None = None,
+    *,
+    func: FuncExceptT | None = None,
+) -> BufferedReader: ...
 
 
 @overload
 def open_file(
-    file: FilePathType, mode: OpenBinaryMode, buffering: int = ...,
-    encoding: None = None, *, func: FuncExceptT | None = None
-) -> BinaryIO:
-    ...
+    file: FilePathType,
+    mode: OpenBinaryMode,
+    buffering: int = ...,
+    encoding: None = None,
+    *,
+    func: FuncExceptT | None = None,
+) -> BinaryIO: ...
 
 
 @overload
 def open_file(
-    file: FilePathType, mode: str, buffering: int = ...,
-    encoding: str | None = ..., errors: str | None = ..., newline: str | None = ...,
-    closefd: bool = ..., opener: FileOpener | None = ..., *, func: FuncExceptT | None = None
-) -> IO[Any]:
-    ...
+    file: FilePathType,
+    mode: str,
+    buffering: int = ...,
+    encoding: str | None = ...,
+    errors: str | None = ...,
+    newline: str | None = ...,
+    closefd: bool = ...,
+    opener: FileOpener | None = ...,
+    *,
+    func: FuncExceptT | None = None,
+) -> IO[Any]: ...
 
 
 def open_file(file: FilePathType, mode: Any = "r+", *args: Any, func: FuncExceptT | None = None, **kwargs: Any) -> Any:

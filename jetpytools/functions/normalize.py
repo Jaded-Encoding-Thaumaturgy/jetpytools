@@ -17,18 +17,16 @@ __all__ = [
     "normalize_ranges",
     "normalize_ranges_to_list",
     "normalize_seq",
-    "to_arr"
+    "to_arr",
 ]
 
 
 @overload
-def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
-    ...
+def normalize_seq(val: T | Sequence[T], length: int) -> list[T]: ...
 
 
 @overload
-def normalize_seq(val: Any, length: int) -> list[Any]:
-    ...
+def normalize_seq(val: Any, length: int) -> list[Any]: ...
 
 
 def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
@@ -51,13 +49,11 @@ def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
 
 
 @overload
-def to_arr(val: T | Iterable[T]) -> list[T]:
-    ...
+def to_arr(val: T | Iterable[T]) -> list[T]: ...
 
 
 @overload
-def to_arr(val: Any) -> list[Any]:
-    ...
+def to_arr(val: Any) -> list[Any]: ...
 
 
 def to_arr(val: Any, *, sub: Any = []) -> list[Any]:
@@ -67,19 +63,18 @@ def to_arr(val: Any, *, sub: Any = []) -> list[Any]:
     """
     if sub:
         import warnings
+
         warnings.warn("sub is deprecated.", DeprecationWarning)
 
     return list(val) if (isinstance(val, Iterable) and not isinstance(val, (str, bytes))) else [val]
 
 
 @overload
-def flatten(items: Iterable[Iterable[T]]) -> Iterator[T]:
-    ...
+def flatten(items: Iterable[Iterable[T]]) -> Iterator[T]: ...
 
 
 @overload
-def flatten(items: Iterable[Any]) -> Iterator[Any]:
-    ...
+def flatten(items: Iterable[Any]) -> Iterator[Any]: ...
 
 
 def flatten(items: Any) -> Iterator[Any]:
@@ -137,10 +132,7 @@ def normalize_list_to_ranges(flist: Iterable[int], min_length: int = 0, exclusiv
 
     flist4 = [i for i in flist2 if len(i) > min_length]
 
-    return list(zip(
-        [i[0] for i in flist4],
-        [i[-1] + exclusive for i in flist4]
-    ))
+    return list(zip([i[0] for i in flist4], [i[-1] + exclusive for i in flist4]))
 
 
 def normalize_ranges_to_list(ranges: Iterable[SoftRange], exclusive: bool = False) -> list[int]:
@@ -153,11 +145,7 @@ def normalize_ranges_to_list(ranges: Iterable[SoftRange], exclusive: bool = Fals
 
 
 def normalize_ranges(
-    ranges: SoftRangeN | SoftRangesN,
-    length: int,
-    exclusive: bool = False,
-    *,
-    strict: bool = True
+    ranges: SoftRangeN | SoftRangesN, length: int, exclusive: bool = False, *, strict: bool = True
 ) -> list[StrictRange]:
     """
     Normalize ranges to a list of positive ranges.
@@ -216,11 +204,13 @@ def normalize_ranges(
         # Always throws an error if start and end are negative
         # or higher than length
         # or start is higher than end (likely mismatched)
-        if any([
-            start < 0 and end < 0,
-            start >= length and end - (not exclusive) > length,
-            start >= end + (not exclusive),
-        ]):
+        if any(
+            [
+                start < 0 and end < 0,
+                start >= length and end - (not exclusive) > length,
+                start >= end + (not exclusive),
+            ]
+        ):
             exception = CustomOverflowError(
                 f"Range `{r}` with length `{length}` could not be normalized!", normalize_ranges
             )
@@ -231,14 +221,14 @@ def normalize_ranges(
             if start < 0:
                 exception = CustomOverflowError(
                     f"Start frame `{start}` in range `{r}` with length `{length}` could not be normalized!",
-                    normalize_ranges
+                    normalize_ranges,
                 )
                 exceptions.append(exception)
                 continue
             if end - (not exclusive) > length:
                 exception = CustomOverflowError(
                     f"End frame `{end}` in range `{r}` with length `{length}` could not be normalized!",
-                    normalize_ranges
+                    normalize_ranges,
                 )
                 exceptions.append(exception)
                 continue
@@ -255,8 +245,7 @@ def normalize_ranges(
         raise Exception(exceptions)
 
     return normalize_list_to_ranges(
-        [x for start, end in out for x in range(start, end + (not exclusive))],
-        exclusive=exclusive
+        [x for start, end in out for x in range(start, end + (not exclusive))], exclusive=exclusive
     )
 
 

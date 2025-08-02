@@ -22,7 +22,7 @@ __all__ = [
     "OpenTextModeUpdating",
     "OpenTextModeWriting",
     "SPath",
-    "SPathLike"
+    "SPathLike",
 ]
 
 
@@ -33,26 +33,70 @@ FilePathType: TypeAlias = str | bytes | PathLike[str] | PathLike[bytes]
 FileOpener: TypeAlias = Callable[[str, int], int]
 
 OpenTextModeUpdating: TypeAlias = Literal[
-    "r+", "+r", "rt+", "r+t", "+rt", "tr+", "t+r", "+tr", "w+", "+w", "wt+", "w+t", "+wt", "tw+", "t+w", "+tw",
-    "a+", "+a", "at+", "a+t", "+at", "ta+", "t+a", "+ta", "x+", "+x", "xt+", "x+t", "+xt", "tx+", "t+x", "+tx",
+    "r+",
+    "+r",
+    "rt+",
+    "r+t",
+    "+rt",
+    "tr+",
+    "t+r",
+    "+tr",
+    "w+",
+    "+w",
+    "wt+",
+    "w+t",
+    "+wt",
+    "tw+",
+    "t+w",
+    "+tw",
+    "a+",
+    "+a",
+    "at+",
+    "a+t",
+    "+at",
+    "ta+",
+    "t+a",
+    "+ta",
+    "x+",
+    "+x",
+    "xt+",
+    "x+t",
+    "+xt",
+    "tx+",
+    "t+x",
+    "+tx",
 ]
-OpenTextModeWriting: TypeAlias = Literal[
-    "w", "wt", "tw", "a", "at", "ta", "x", "xt", "tx"
-]
-OpenTextModeReading: TypeAlias = Literal[
-    "r", "rt", "tr", "U", "rU", "Ur", "rtU", "rUt", "Urt", "trU", "tUr", "Utr"
-]
+OpenTextModeWriting: TypeAlias = Literal["w", "wt", "tw", "a", "at", "ta", "x", "xt", "tx"]
+OpenTextModeReading: TypeAlias = Literal["r", "rt", "tr", "U", "rU", "Ur", "rtU", "rUt", "Urt", "trU", "tUr", "Utr"]
 
 OpenBinaryModeUpdating: TypeAlias = Literal[
-    "rb+", "r+b", "+rb", "br+", "b+r", "+br", "wb+", "w+b", "+wb", "bw+", "b+w", "+bw",
-    "ab+", "a+b", "+ab", "ba+", "b+a", "+ba", "xb+", "x+b", "+xb", "bx+", "b+x", "+bx"
+    "rb+",
+    "r+b",
+    "+rb",
+    "br+",
+    "b+r",
+    "+br",
+    "wb+",
+    "w+b",
+    "+wb",
+    "bw+",
+    "b+w",
+    "+bw",
+    "ab+",
+    "a+b",
+    "+ab",
+    "ba+",
+    "b+a",
+    "+ba",
+    "xb+",
+    "x+b",
+    "+xb",
+    "bx+",
+    "b+x",
+    "+bx",
 ]
-OpenBinaryModeWriting: TypeAlias = Literal[
-    "wb", "bw", "ab", "ba", "xb", "bx"
-]
-OpenBinaryModeReading: TypeAlias = Literal[
-    "rb", "br", "rbU", "rUb", "Urb", "brU", "bUr", "Ubr"
-]
+OpenBinaryModeWriting: TypeAlias = Literal["wb", "bw", "ab", "ba", "xb", "bx"]
+OpenBinaryModeReading: TypeAlias = Literal["rb", "br", "rbU", "rUb", "Urb", "brU", "bUr", "Ubr"]
 
 OpenTextMode: TypeAlias = OpenTextModeUpdating | OpenTextModeWriting | OpenTextModeReading
 OpenBinaryMode: TypeAlias = OpenBinaryModeUpdating | OpenBinaryModeReading | OpenBinaryModeWriting
@@ -65,8 +109,8 @@ class SPath(Path):
         _flavour = type(Path())._flavour  # type: ignore
 
     if TYPE_CHECKING:
-        def __new__(cls, *args: SPathLike, **kwargs: Any) -> Self:
-            ...
+
+        def __new__(cls, *args: SPathLike, **kwargs: Any) -> Self: ...
 
     def format(self, *args: Any, **kwargs: Any) -> SPath:
         """Format the path with the given arguments."""
@@ -102,16 +146,13 @@ class SPath(Path):
             if not missing_ok:
                 raise
 
-    def read_lines(
-        self, encoding: str | None = None, errors: str | None = None, keepends: bool = False
-    ) -> list[str]:
+    def read_lines(self, encoding: str | None = None, errors: str | None = None, keepends: bool = False) -> list[str]:
         """Read the file and return its lines."""
 
         return super().read_text(encoding, errors).splitlines(keepends)
 
     def write_lines(
-        self, data: Iterable[str], encoding: str | None = None,
-        errors: str | None = None, newline: str | None = None
+        self, data: Iterable[str], encoding: str | None = None, errors: str | None = None, newline: str | None = None
     ) -> int:
         """Open the file and write the given lines."""
 
@@ -150,6 +191,7 @@ class SPath(Path):
 
         if not self.is_dir():
             from ..exceptions import PathIsNotADirectoryError
+
             raise PathIsNotADirectoryError('The given path, "{self}" is not a directory!', self.copy_dir)
 
         dst.mkdirp()
@@ -189,6 +231,7 @@ class SPath(Path):
 
         if not self.exists():
             from ..exceptions import FileNotExistsError
+
             raise FileNotExistsError('The given path, "{self}" is not a file or directory!', self.get_size)
 
         if self.is_file():

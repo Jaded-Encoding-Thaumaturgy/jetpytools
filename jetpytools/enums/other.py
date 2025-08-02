@@ -4,11 +4,7 @@ from typing import overload
 
 from typing_extensions import Self
 
-__all__ = [
-    "Coordinate",
-    "Position",
-    "Size"
-]
+__all__ = ["Coordinate", "Position", "Size"]
 
 
 class Coordinate:
@@ -25,12 +21,10 @@ class Coordinate:
     """Vertical coordinate."""
 
     @overload
-    def __init__(self, other: tuple[int, int] | Self, /) -> None:
-        ...
+    def __init__(self, other: tuple[int, int] | Self, /) -> None: ...
 
     @overload
-    def __init__(self, x: int, y: int, /) -> None:
-        ...
+    def __init__(self, x: int, y: int, /) -> None: ...
 
     def __init__(self, x_or_self: int | tuple[int, int] | Self, y: int | None = None, /) -> None:
         from ..exceptions import CustomValueError

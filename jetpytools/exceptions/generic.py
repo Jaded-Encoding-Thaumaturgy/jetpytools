@@ -5,9 +5,7 @@ from typing import Any, Iterable
 from ..types import FuncExceptT, SupportsString, T
 from .base import CustomValueError
 
-__all__ = [
-    "MismatchError", "MismatchRefError"
-]
+__all__ = ["MismatchError", "MismatchRefError"]
 
 
 class MismatchError(CustomValueError):
@@ -22,8 +20,12 @@ class MismatchError(CustomValueError):
         return tuple(dict.fromkeys(map(cls._item_to_name, items)).keys())
 
     def __init__(
-        self, func: FuncExceptT, items: Iterable[Any], message: SupportsString = "All items must be equal!",
-        reason: Any = "{reduced_items}", **kwargs: Any
+        self,
+        func: FuncExceptT,
+        items: Iterable[Any],
+        message: SupportsString = "All items must be equal!",
+        reason: Any = "{reduced_items}",
+        **kwargs: Any,
     ) -> None:
         super().__init__(message, func, reason, **kwargs, reduced_items=iter(self._reduce(items)))
 
