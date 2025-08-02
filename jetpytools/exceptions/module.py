@@ -6,8 +6,8 @@ from ..types import FuncExceptT, SupportsString
 from .base import CustomError
 
 __all__ = [
-    'CustomImportError',
-    'DependencyNotFoundError'
+    "CustomImportError",
+    "DependencyNotFoundError"
 ]
 
 

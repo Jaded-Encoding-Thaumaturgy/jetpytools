@@ -7,8 +7,8 @@ from typing import Sequence
 from ..types import F
 
 __all__ = [
-    'copy_func',
-    'erase_module'
+    "copy_func",
+    "erase_module"
 ]
 
 
@@ -29,7 +29,7 @@ def copy_func(f: F) -> FunctionType:
 def erase_module(func: F, modules: Sequence[str] | None = None) -> F:
     """Delete the __module__ of the function."""
 
-    if hasattr(func, '__module__') and (True if modules is None else (func.__module__ in modules)):
+    if hasattr(func, "__module__") and (True if modules is None else (func.__module__ in modules)):
         func.__module__ = None  # type: ignore
 
     return func

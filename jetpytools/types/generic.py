@@ -7,15 +7,13 @@ from .builtins import F, SingleOrArr, SingleOrArrOpt
 from .supports import SupportsString
 
 __all__ = [
-    'MissingT', 'MISSING',
-
-    'FuncExceptT',
-
-    'DataType',
-
-    'StrArr', 'StrArrOpt',
-
-    'PassthroughC'
+    "MISSING",
+    "DataType",
+    "FuncExceptT",
+    "MissingT",
+    "PassthroughC",
+    "StrArr",
+    "StrArrOpt"
 ]
 
 

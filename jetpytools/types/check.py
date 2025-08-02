@@ -5,7 +5,10 @@ from typing_extensions import TypeIs
 from .builtins import SoftRange, SoftRangeN, SoftRangesN, StrictRange
 
 __all__ = [
-    "is_strict_range", "is_soft_range", "is_soft_range_n", "is_soft_ranges_n"
+    "is_soft_range",
+    "is_soft_range_n",
+    "is_soft_ranges_n",
+    "is_strict_range"
 ]
 
 

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Concatenate, overload
 from inspect import signature
+from typing import Any, Callable, Concatenate, overload
 
 from ..exceptions import CustomRuntimeError, CustomValueError
 from ..types import MISSING, KwargsT, MissingT, P, R, T
 
 __all__ = [
-    'iterate', 'fallback', 'kwargs_fallback', 'filter_kwargs'
+    "fallback",
+    "filter_kwargs",
+    "iterate",
+    "kwargs_fallback"
 ]
 
 
@@ -106,7 +109,7 @@ def fallback(value: T | None, *fallbacks: T | None, default: Any | T = fallback_
     elif len(fallbacks) > 3:
         return MISSING
 
-    raise CustomRuntimeError('You need to specify a default/fallback value!')
+    raise CustomRuntimeError("You need to specify a default/fallback value!")
 
 
 @overload

@@ -1,35 +1,32 @@
 from __future__ import annotations
 
 import sys
-
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from typing_extensions import Self
 
-from ..types import MISSING, FuncExceptT, SupportsString, MissingT
+from ..types import MISSING, FuncExceptT, MissingT, SupportsString
 
 __all__ = [
-    'CustomError',
-
-    'CustomValueError',
-    'CustomIndexError',
-    'CustomOverflowError',
-    'CustomKeyError',
-    'CustomTypeError',
-    'CustomRuntimeError',
-    'CustomNotImplementedError',
-    'CustomPermissionError'
+    "CustomError",
+    "CustomIndexError",
+    "CustomKeyError",
+    "CustomNotImplementedError",
+    "CustomOverflowError",
+    "CustomPermissionError",
+    "CustomRuntimeError",
+    "CustomTypeError",
+    "CustomValueError"
 ]
 
 
 if TYPE_CHECKING:
-    class ExceptionT(Exception):
+    class ExceptionError(Exception):
         __name__: str
         __qualname__: str
-        ...
 else:
-    ExceptionT = Exception
+    ExceptionError = Exception
 
 
 class CustomErrorMeta(type):
@@ -39,7 +36,7 @@ class CustomErrorMeta(type):
         return CustomErrorMeta.setup_exception(type.__new__(cls, *args))  # type: ignore
 
     @staticmethod
-    def setup_exception(exception: SelfCErrorMeta, override: str | ExceptionT | None = None) -> SelfCErrorMeta:
+    def setup_exception(exception: SelfCErrorMeta, override: str | ExceptionError | None = None) -> SelfCErrorMeta:
         """
         Setup an exception for later use in CustomError.
 
@@ -55,28 +52,28 @@ class CustomErrorMeta(type):
             else:
                 over_name, over_qual = override.__name__, override.__qualname__
 
-            if over_name.startswith('Custom'):
+            if over_name.startswith("Custom"):
                 exception.__name__ = over_name
             else:
-                exception.__name__ = f'Custom{over_name}'
+                exception.__name__ = f"Custom{over_name}"
 
             exception.__qualname__ = over_qual
 
-        if exception.__qualname__.startswith('Custom'):
+        if exception.__qualname__.startswith("Custom"):
             exception.__qualname__ = exception.__qualname__[6:]
 
         if sys.stdout and sys.stdout.isatty():
-            exception.__qualname__ = f'\033[0;31;1m{exception.__qualname__}\033[0m'
+            exception.__qualname__ = f"\033[0;31;1m{exception.__qualname__}\033[0m"
 
         exception.__module__ = Exception.__module__
 
         return exception
 
 
-SelfCErrorMeta = TypeVar('SelfCErrorMeta', bound=CustomErrorMeta)
+SelfCErrorMeta = TypeVar("SelfCErrorMeta", bound=CustomErrorMeta)
 
 
-class CustomError(ExceptionT, metaclass=CustomErrorMeta):
+class CustomError(ExceptionError, metaclass=CustomErrorMeta):
     """Custom base exception class."""
 
     def __init__(
@@ -97,7 +94,7 @@ class CustomError(ExceptionT, metaclass=CustomErrorMeta):
 
         super().__init__(message)
 
-    def __class_getitem__(cls, exception: str | type[ExceptionT] | ExceptionT) -> CustomError:
+    def __class_getitem__(cls, exception: str | type[ExceptionError] | ExceptionError) -> CustomError:
         from warnings import warn
 
         warn("Custom error is not subscriptable anymore. Don't use it", DeprecationWarning)
@@ -140,17 +137,17 @@ class CustomError(ExceptionT, metaclass=CustomErrorMeta):
         message = self.message
 
         if not message:
-            message = 'An error occurred!'
+            message = "An error occurred!"
 
         if self.func:
             func_header = norm_func_name(self.func).strip()
 
             if sys.stdout and sys.stdout.isatty():
-                func_header = f'\033[0;36m{func_header}\033[0m'
+                func_header = f"\033[0;36m{func_header}\033[0m"
 
-            func_header = f'({func_header}) '
+            func_header = f"({func_header}) "
         else:
-            func_header = ''
+            func_header = ""
 
         if self.kwargs:
             self.kwargs = {
@@ -162,18 +159,18 @@ class CustomError(ExceptionT, metaclass=CustomErrorMeta):
 
             if reason:
                 if not isinstance(self.reason, dict):
-                    reason = f'({reason})'
+                    reason = f"({reason})"
 
                 if sys.stdout and sys.stdout.isatty():
-                    reason = f'\033[0;33m{reason}\033[0m'
-                reason = f' {reason}'
+                    reason = f"\033[0;33m{reason}\033[0m"
+                reason = f" {reason}"
         else:
-            reason = ''
+            reason = ""
 
-        return f'{func_header}{self.message!s}{reason}'.format(**self.kwargs).strip()
+        return f"{func_header}{self.message!s}{reason}".format(**self.kwargs).strip()
 
 
-SelfError = TypeVar('SelfError', bound=CustomError)
+SelfError = TypeVar("SelfError", bound=CustomError)
 
 
 class CustomValueError(CustomError, ValueError):

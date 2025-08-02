@@ -4,8 +4,21 @@ from functools import partial, wraps
 from inspect import Signature
 from inspect import _empty as empty_param
 from typing import (
-    TYPE_CHECKING, Any, Callable, Concatenate, Generator, Generic, Iterable, Iterator, Mapping, NoReturn, Protocol,
-    Sequence, TypeVar, cast, overload
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Concatenate,
+    Generator,
+    Generic,
+    Iterable,
+    Iterator,
+    Mapping,
+    NoReturn,
+    Protocol,
+    Sequence,
+    cast,
+    overload,
 )
 
 from typing_extensions import Self
@@ -13,29 +26,24 @@ from typing_extensions import Self
 from .builtins import F0, F1, P0, P1, R0, R1, T0, T1, T2, KwargsT, P, R, R0_co, R1_co, R_co, T, T0_co, T1_co, T_co
 
 __all__ = [
-    'copy_signature',
-
-    'inject_self',
-
-    'inject_kwargs_params',
-
-    'complex_hash',
-
-    'get_subclasses',
-
-    'classproperty', 'cachedproperty',
-
-    'KwargsNotNone',
-
-    'Singleton', 'to_singleton',
-
-    'LinearRangeLut'
+    "KwargsNotNone",
+    "LinearRangeLut",
+    "Singleton",
+    "cachedproperty",
+    "classproperty",
+    "complex_hash",
+    "copy_signature",
+    "get_subclasses",
+    "inject_kwargs_params",
+    "inject_self",
+    "to_singleton"
 ]
-
+# ruff: noqa: N801
 
 class copy_signature(Generic[F0]):
     """
-    Type util to copy the signature of one function to another function.\n
+    Type util to copy the signature of one function to another function.
+
     Especially useful for passthrough functions.
 
     .. code-block::
@@ -116,7 +124,7 @@ class inject_self_base(Generic[T_co, P, R_co]):
         self.clean_kwargs = False
 
     def __get__(
-        self, class_obj: type[T] | T | None, class_type: type[T] | type[type[T]] | Any  # type: ignore[valid-type]
+        self, class_obj: type[T] | T | None, class_type: type[T | type[T]] | Any  # type: ignore[valid-type]
     ) -> injected_self_func[T_co, P, R_co]:
         if not self.signature or not self.first_key:
             self.signature = Signature.from_callable(self.function, eval_str=True)
@@ -127,7 +135,7 @@ class inject_self_base(Generic[T_co, P, R_co]):
 
                 if 4 not in {x.kind for x in self.signature.parameters.values()}:
                     raise CustomValueError(
-                        'This function hasn\'t got any kwargs!', 'inject_self.init_kwargs', self.function
+                        "This function hasn't got any kwargs!", "inject_self.init_kwargs", self.function
                     )
 
                 self.init_kwargs = list[str](
@@ -243,7 +251,7 @@ class inject_kwargs_params_base_func(Generic[T_co, P, R_co]):
 class inject_kwargs_params_base(Generic[T_co, P, R_co]):
     signature: Signature | None
 
-    _kwargs_name = 'kwargs'
+    _kwargs_name = "kwargs"
 
     def __init__(self, function: Callable[Concatenate[T_co, P], R_co]) -> None:
         self.function = function
@@ -263,7 +271,7 @@ class inject_kwargs_params_base(Generic[T_co, P, R_co]):
                 from ..exceptions import CustomValueError
 
                 raise CustomValueError(
-                    'This function hasn\'t got any kwargs!', 'inject_kwargs_params.add_to_kwargs', self.function
+                    "This function hasn't got any kwargs!", "inject_kwargs_params.add_to_kwargs", self.function
                 )
 
         this = self
@@ -358,7 +366,7 @@ class complex_hash(Generic[T]):
             def __hash__(self) -> int:
                 return complex_hash.hash(
                     self.__class__.__name__, *(
-                        getattr(self, key) for key in self.__annotations__.keys()
+                        getattr(self, key) for key in self.__annotations__
                     )
                 )
 
@@ -379,14 +387,11 @@ class complex_hash(Generic[T]):
             try:
                 new_hash = hash(value)
             except TypeError:
-                if isinstance(value, Iterable):
-                    new_hash = complex_hash.hash(*value)
-                else:
-                    new_hash = hash(str(value))
+                new_hash = complex_hash.hash(*value) if isinstance(value, Iterable) else hash(str(value))
 
             values.append(str(new_hash))
 
-        return hash('_'.join(values))
+        return hash("_".join(values))
 
 
 def get_subclasses(family: type[T], exclude: Sequence[type[T]] = []) -> list[type[T]]:
@@ -436,27 +441,27 @@ class classproperty(Generic[T, R]):
 
         return func
 
-    def __get__(self, __obj: T | None, __type: type | None = None) -> R:
-        if __type is None:
-            __type = type(__obj)
+    def __get__(self, obj: T | None, type_: type | None = None) -> R:
+        if type_ is None:
+            type_ = type(obj)
 
-        return self.fget.__get__(__obj, __type)()
+        return self.fget.__get__(obj, type_)()
 
-    def __set__(self, __obj: T, __value: Any) -> None:
+    def __set__(self, obj: T, value: Any) -> None:
         if not self.fset:
             raise AttributeError(
-                f'classproperty with getter "{self.__name__}" of "{__obj.__class__.__name__}" object has no setter.'
+                f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no setter.'
             )
 
-        self.fset.__get__(None, type(__obj))(__value)
+        self.fset.__get__(None, type(obj))(value)
 
-    def __delete__(self, __obj: T) -> None:
+    def __delete__(self, obj: T) -> None:
         if not self.fdel:
             raise AttributeError(
-                f'classproperty with getter "{self.__name__}" of "{__obj.__class__.__name__}" object has no deleter.'
+                f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no deleter.'
             )
 
-        self.fdel.__get__(None, type(__obj))()
+        self.fdel.__get__(None, type(obj))()
 
     @property
     def __name__(self) -> str:
@@ -476,7 +481,7 @@ class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
 
     __isabstractmethod__: bool = False
 
-    cache_key = '_jetpt_cachedproperty_cache'
+    cache_key = "_jetpt_cachedproperty_cache"
 
     class baseclass:
         """Inherit from this class to automatically set the cache dict."""
@@ -497,37 +502,37 @@ class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
         ) -> None:
             ...
 
-        def getter(self, __fget: Callable[P1, R0_co]) -> cachedproperty[P1, R0_co, T, T0, P0]:
+        def getter(self, fget: Callable[P1, R0_co]) -> cachedproperty[P1, R0_co, T, T0, P0]:
             ...
 
-        def setter(self, __fset: Callable[[T1, T2], None]) -> cachedproperty[P, R_co, T1, T2, P0]:
+        def setter(self, fset: Callable[[T1, T2], None]) -> cachedproperty[P, R_co, T1, T2, P0]:
             ...
 
-        def deleter(self, __fdel: Callable[P1, None]) -> cachedproperty[P, R_co, T, T0, P1]:
+        def deleter(self, fdel: Callable[P1, None]) -> cachedproperty[P, R_co, T, T0, P1]:
             ...
 
     @overload
-    def __get__(self, __obj: None, __type: type | None = None) -> Self:
+    def __get__(self, obj: None, type_: type | None = None) -> Self:
         ...
 
     @overload
-    def __get__(self, __obj: object, __type: type | None = None) -> R_co:
+    def __get__(self, obj: object, type_: type | None = None) -> R_co:
         ...
 
-    def __get__(self, __obj: Any, __type: type | None = None) -> Any:
+    def __get__(self, obj: Any, type_: type | None = None) -> Any:
         if isinstance(self.fget, classproperty):
-            function = partial(self.fget.__get__, __obj, __type)  # type: ignore
-            __obj = __type
+            function = partial(self.fget.__get__, obj, type_)  # type: ignore
+            obj = type_
 
-            if not hasattr(__obj, cachedproperty.cache_key):
-                setattr(__obj, cachedproperty.cache_key, dict[str, Any]())
+            if not hasattr(obj, cachedproperty.cache_key):
+                setattr(obj, cachedproperty.cache_key, dict[str, Any]())
 
-            cache = getattr(__obj, cachedproperty.cache_key)
+            cache = getattr(obj, cachedproperty.cache_key)
             name = self.fget.__name__
         else:
             assert self.fget
-            function = self.fget.__get__(__obj, __type)
-            cache = __obj.__dict__.get(cachedproperty.cache_key)
+            function = self.fget.__get__(obj, type_)
+            cache = obj.__dict__.get(cachedproperty.cache_key)
             name = function.__name__
 
         if name not in cache:
@@ -544,35 +549,29 @@ class KwargsNotNone(KwargsT):
     """Remove all None objects from this kwargs dict."""
 
     if not TYPE_CHECKING:
-        def __new__(cls, *args: Any, **kwargs: Any) -> KwargsNotNone:
+        def __new__(cls, *args: Any, **kwargs: Any) -> Self:
             return KwargsT(**{
                 key: value for key, value in KwargsT(*args, **kwargs).items()
                 if value is not None
             })
 
 
-SingleMeta = TypeVar('SingleMeta', bound=type)
-
-
 class SingletonMeta(type):
-    _instances = dict[type[SingleMeta], SingleMeta]()  # type: ignore
+    _instances: ClassVar[dict[type[Any], Any]] = {}
     _singleton_init: bool
 
     def __new__(
-        cls: type[SingletonSelf], name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any
-    ) -> SingletonSelf:
-        return type.__new__(cls, name, bases, namespace | {'_singleton_init': kwargs.pop('init', False)})
+        cls, name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any
+    ) -> SingletonMeta:
+        return type.__new__(cls, name, bases, namespace | {"_singleton_init": kwargs.pop("init", False)})
 
-    def __call__(cls: type[SingletonSelf], *args: Any, **kwargs: Any) -> SingletonSelf:  # type: ignore
+    def __call__(cls, *args: Any, **kwargs: Any) -> SingletonMeta:
         if cls not in cls._instances:
             cls._instances[cls] = super(SingletonMeta, cls).__call__(*args, **kwargs)
         elif cls._singleton_init:
-            cls._instances[cls].__init__(*args, **kwargs)  # type: ignore
+            cls._instances[cls].__init__(*args, **kwargs)
 
         return cls._instances[cls]
-
-
-SingletonSelf = TypeVar('SingletonSelf', bound=SingletonMeta)
 
 
 class Singleton(metaclass=SingletonMeta):
@@ -581,7 +580,7 @@ class Singleton(metaclass=SingletonMeta):
 
 class to_singleton_impl:
     _ts_args = tuple[str, ...]()
-    _ts_kwargs = dict[str, Any]()
+    _ts_kwargs: Mapping[str, Any] = {}
     _add_classes = tuple[type, ...]()
 
     def __new__(_cls, cls: type[T]) -> T:  # type: ignore
@@ -608,7 +607,7 @@ class to_singleton(to_singleton_impl):
 
 
 class LinearRangeLut(Mapping[int, int]):
-    __slots__ = ('ranges', '_ranges_idx_lut', '_misses_n')
+    __slots__ = ("_misses_n", "_ranges_idx_lut", "ranges")
 
     def __init__(self, ranges: Mapping[int, range]) -> None:
         self.ranges = ranges
@@ -617,6 +616,8 @@ class LinearRangeLut(Mapping[int, int]):
         self._misses_n = 0
 
     def __getitem__(self, n: int) -> int:
+        missed_hit = 0
+
         for missed_hit, (idx, k) in enumerate(self._ranges_idx_lut):
             if n in k:
                 break

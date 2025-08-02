@@ -1,22 +1,23 @@
 from __future__ import annotations
 
-from fractions import Fraction
 import sys
+from fractions import Fraction
 from typing import Any, Callable, Iterable, Iterator, Sequence, overload
 
-from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, T, is_soft_range_n
 from ..exceptions import CustomOverflowError
+from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, T, is_soft_range_n
 
 __all__ = [
-    'normalize_seq',
-    'to_arr',
-    'flatten',
-    'normalize_list_to_ranges',
-    'normalize_ranges_to_list',
-    'normalize_range',
-    'normalize_ranges',
-    'invert_ranges',
-    'norm_func_name', 'norm_display_name'
+    "flatten",
+    "invert_ranges",
+    "norm_display_name",
+    "norm_func_name",
+    "normalize_list_to_ranges",
+    "normalize_range",
+    "normalize_ranges",
+    "normalize_ranges_to_list",
+    "normalize_seq",
+    "to_arr"
 ]
 
 
@@ -125,10 +126,9 @@ def normalize_list_to_ranges(flist: Iterable[int], min_length: int = 0, exclusiv
     prev_n = -1
 
     for n in sorted(set(flist)):
-        if prev_n + 1 != n:
-            if flist3:
-                flist2.append(flist3)
-                flist3 = []
+        if prev_n + 1 != n and flist3:
+            flist2.append(flist3)
+            flist3.clear()
         flist3.append(n)
         prev_n = n
 
@@ -281,15 +281,14 @@ def norm_func_name(func_name: SupportsString | Callable[..., Any]) -> str:
 
     func = func_name
 
-    if hasattr(func_name, '__name__'):
+    if hasattr(func_name, "__name__"):
         func_name = func.__name__
-    elif hasattr(func_name, '__qualname__'):
+    elif hasattr(func_name, "__qualname__"):
         func_name = func.__qualname__
 
-    if callable(func):
-        if hasattr(func, '__self__'):
-            func = func.__self__ if isinstance(func.__self__, type) else func.__self__.__class__
-            func_name = f'{func.__name__}.{func_name}'
+    if callable(func) and hasattr(func, "__self__"):
+        func = func.__self__ if isinstance(func.__self__, type) else func.__self__.__class__
+        func_name = f"{func.__name__}.{func_name}"
 
     return str(func_name).strip()
 
@@ -298,12 +297,12 @@ def norm_display_name(obj: object) -> str:
     """Get a fancy name from any object."""
 
     if isinstance(obj, Iterator):
-        return ', '.join(norm_display_name(v) for v in obj).strip()
+        return ", ".join(norm_display_name(v) for v in obj).strip()
 
     if isinstance(obj, Fraction):
-        return f'{obj.numerator}/{obj.denominator}'
+        return f"{obj.numerator}/{obj.denominator}"
 
     if isinstance(obj, dict):
-        return '(' + ', '.join(f'{k}={v}' for k, v in obj.items()) + ')'
+        return "(" + ", ".join(f"{k}={v}" for k, v in obj.items()) + ")"
 
     return norm_func_name(obj)

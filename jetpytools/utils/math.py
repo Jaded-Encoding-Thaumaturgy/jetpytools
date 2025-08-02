@@ -6,17 +6,17 @@ from typing import Sequence
 from ..types import Nb
 
 __all__ = [
-    'clamp', 'clamp_arr',
-
-    'cround',
-
-    'mod_x', 'mod2', 'mod4', 'mod8',
-
-    'next_power_of_y', 'next_power_of_2',
-
-    'spline_coeff',
-
-    'ndigits'
+    "clamp",
+    "clamp_arr",
+    "cround",
+    "mod2",
+    "mod4",
+    "mod8",
+    "mod_x",
+    "ndigits",
+    "next_power_of_2",
+    "next_power_of_y",
+    "spline_coeff"
 ]
 
 

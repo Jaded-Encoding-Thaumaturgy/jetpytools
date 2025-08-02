@@ -7,9 +7,8 @@ from ..exceptions import CustomIndexError
 from ..types import T0, T
 
 __all__ = [
-    'ranges_product',
-
-    'interleave_arr'
+    "interleave_arr",
+    "ranges_product"
 ]
 
 
@@ -34,7 +33,7 @@ def ranges_product(*_iterables: range | int) -> Iterable[tuple[int, ...]]:
     n_iterables = len(_iterables)
 
     if n_iterables <= 1:
-        raise CustomIndexError(f'Not enough ranges passed! ({n_iterables})', ranges_product)
+        raise CustomIndexError(f"Not enough ranges passed! ({n_iterables})", ranges_product)
 
     iterables = [range(x) if isinstance(x, int) else x for x in _iterables]
 
@@ -52,7 +51,7 @@ def ranges_product(*_iterables: range | int) -> Iterable[tuple[int, ...]]:
                 for zz in third_it:
                     yield xx, yy, zz
     else:
-        raise CustomIndexError(f'Too many ranges passed! ({n_iterables})', ranges_product)
+        raise CustomIndexError(f"Too many ranges passed! ({n_iterables})", ranges_product)
 
 
 def interleave_arr(arr0: Iterable[T], arr1: Iterable[T0], n: int = 2) -> Iterable[T | T0]:

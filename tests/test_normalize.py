@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 import sys
 
 import pytest
 
 from jetpytools import CustomOverflowError, normalize_ranges
-
 
 if sys.version_info < (3, 11):
     ExceptionGroup = Exception

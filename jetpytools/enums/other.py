@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from typing import overload
+
 from typing_extensions import Self
 
 __all__ = [
-    'Coordinate',
-    'Position',
-    'Size'
+    "Coordinate",
+    "Position",
+    "Size"
 ]
 
 

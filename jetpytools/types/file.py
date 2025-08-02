@@ -7,22 +7,22 @@ from pathlib import Path
 from sys import version_info
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, TypeAlias, Union
 
+from typing_extensions import Self
+
 __all__ = [
-    'FilePathType', 'FileDescriptor',
-    'FileOpener',
-
-    'OpenTextModeUpdating',
-    'OpenTextModeWriting',
-    'OpenTextModeReading',
-
-    'OpenBinaryModeUpdating',
-    'OpenBinaryModeWriting',
-    'OpenBinaryModeReading',
-
-    'OpenTextMode',
-    'OpenBinaryMode',
-
-    'SPath', 'SPathLike'
+    "FileDescriptor",
+    "FileOpener",
+    "FilePathType",
+    "OpenBinaryMode",
+    "OpenBinaryModeReading",
+    "OpenBinaryModeUpdating",
+    "OpenBinaryModeWriting",
+    "OpenTextMode",
+    "OpenTextModeReading",
+    "OpenTextModeUpdating",
+    "OpenTextModeWriting",
+    "SPath",
+    "SPathLike"
 ]
 
 
@@ -33,25 +33,25 @@ FilePathType: TypeAlias = str | bytes | PathLike[str] | PathLike[bytes]
 FileOpener: TypeAlias = Callable[[str, int], int]
 
 OpenTextModeUpdating: TypeAlias = Literal[
-    'r+', '+r', 'rt+', 'r+t', '+rt', 'tr+', 't+r', '+tr', 'w+', '+w', 'wt+', 'w+t', '+wt', 'tw+', 't+w', '+tw',
-    'a+', '+a', 'at+', 'a+t', '+at', 'ta+', 't+a', '+ta', 'x+', '+x', 'xt+', 'x+t', '+xt', 'tx+', 't+x', '+tx',
+    "r+", "+r", "rt+", "r+t", "+rt", "tr+", "t+r", "+tr", "w+", "+w", "wt+", "w+t", "+wt", "tw+", "t+w", "+tw",
+    "a+", "+a", "at+", "a+t", "+at", "ta+", "t+a", "+ta", "x+", "+x", "xt+", "x+t", "+xt", "tx+", "t+x", "+tx",
 ]
 OpenTextModeWriting: TypeAlias = Literal[
-    'w', 'wt', 'tw', 'a', 'at', 'ta', 'x', 'xt', 'tx'
+    "w", "wt", "tw", "a", "at", "ta", "x", "xt", "tx"
 ]
 OpenTextModeReading: TypeAlias = Literal[
-    'r', 'rt', 'tr', 'U', 'rU', 'Ur', 'rtU', 'rUt', 'Urt', 'trU', 'tUr', 'Utr'
+    "r", "rt", "tr", "U", "rU", "Ur", "rtU", "rUt", "Urt", "trU", "tUr", "Utr"
 ]
 
 OpenBinaryModeUpdating: TypeAlias = Literal[
-    'rb+', 'r+b', '+rb', 'br+', 'b+r', '+br', 'wb+', 'w+b', '+wb', 'bw+', 'b+w', '+bw',
-    'ab+', 'a+b', '+ab', 'ba+', 'b+a', '+ba', 'xb+', 'x+b', '+xb', 'bx+', 'b+x', '+bx'
+    "rb+", "r+b", "+rb", "br+", "b+r", "+br", "wb+", "w+b", "+wb", "bw+", "b+w", "+bw",
+    "ab+", "a+b", "+ab", "ba+", "b+a", "+ba", "xb+", "x+b", "+xb", "bx+", "b+x", "+bx"
 ]
 OpenBinaryModeWriting: TypeAlias = Literal[
-    'wb', 'bw', 'ab', 'ba', 'xb', 'bx'
+    "wb", "bw", "ab", "ba", "xb", "bx"
 ]
 OpenBinaryModeReading: TypeAlias = Literal[
-    'rb', 'br', 'rbU', 'rUb', 'Urb', 'brU', 'bUr', 'Ubr'
+    "rb", "br", "rbU", "rUb", "Urb", "brU", "bUr", "Ubr"
 ]
 
 OpenTextMode: TypeAlias = OpenTextModeUpdating | OpenTextModeWriting | OpenTextModeReading
@@ -65,7 +65,7 @@ class SPath(Path):
         _flavour = type(Path())._flavour  # type: ignore
 
     if TYPE_CHECKING:
-        def __new__(cls, *args: SPathLike, **kwargs: Any) -> SPath:
+        def __new__(cls, *args: SPathLike, **kwargs: Any) -> Self:
             ...
 
     def format(self, *args: Any, **kwargs: Any) -> SPath:
@@ -115,9 +115,9 @@ class SPath(Path):
     ) -> int:
         """Open the file and write the given lines."""
 
-        return super().write_text('\n'.join(data), encoding, errors, newline)
+        return super().write_text("\n".join(data), encoding, errors, newline)
 
-    def append_to_stem(self, suffixes: str | Iterable[str], sep: str = '_') -> SPath:
+    def append_to_stem(self, suffixes: str | Iterable[str], sep: str = "_") -> SPath:
         """Append a suffix to the stem of the path"""
 
         from ..functions import to_arr
@@ -150,19 +150,19 @@ class SPath(Path):
 
         if not self.is_dir():
             from ..exceptions import PathIsNotADirectoryError
-            raise PathIsNotADirectoryError('The given path, \"{self}\" is not a directory!', self.copy_dir)
+            raise PathIsNotADirectoryError('The given path, "{self}" is not a directory!', self.copy_dir)
 
         dst.mkdirp()
         shutil.copytree(self, dst, dirs_exist_ok=True)
 
         return SPath(dst)
 
-    def lglob(self, pattern: str = '*') -> list[SPath]:
+    def lglob(self, pattern: str = "*") -> list[SPath]:
         """Glob the path and return the list of paths."""
 
         return list(map(SPath, self.glob(pattern)))
 
-    def fglob(self, pattern: str = '*') -> SPath | None:
+    def fglob(self, pattern: str = "*") -> SPath | None:
         """Glob the path and return the first match."""
 
         for root, dirs, files in walk(self):
@@ -172,7 +172,7 @@ class SPath(Path):
 
         return None
 
-    def find_newest_file(self, pattern: str = '*') -> SPath | None:
+    def find_newest_file(self, pattern: str = "*") -> SPath | None:
         """Find the most recently modified file matching the given pattern in the directory."""
 
         matching_files = self.get_folder().glob(pattern)
@@ -189,12 +189,12 @@ class SPath(Path):
 
         if not self.exists():
             from ..exceptions import FileNotExistsError
-            raise FileNotExistsError('The given path, \"{self}\" is not a file or directory!', self.get_size)
+            raise FileNotExistsError('The given path, "{self}" is not a file or directory!', self.get_size)
 
         if self.is_file():
             return self.stat().st_size
 
-        return sum(f.stat().st_size for f in self.rglob('*') if f.is_file())
+        return sum(f.stat().st_size for f in self.rglob("*") if f.is_file())
 
     def is_executable(self) -> bool:
         """Check if the path is executable."""
