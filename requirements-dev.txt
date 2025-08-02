@@ -1,5 +1,0 @@
-flake8>=7.0.0
-mypy>=1.10.0
-mypy-extensions>=1.0.0
-pytest==8.3.5
-typing-extensions>=4.11.0

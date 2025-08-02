@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-__all__ = [
-    'deepmerge'
-]
+__all__ = ["deepmerge"]
 
 
 def deepmerge(source: dict[Any, Any], destination: dict[Any, Any]) -> dict[Any, Any]:

@@ -1,34 +1,22 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, SupportsIndex, TypeAlias, overload
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, SupportsIndex, TypeAlias
 
 from typing_extensions import Self, TypeIs
 
 from .builtins import P, T
 from .supports import SupportsString
 
-__all__ = [
-    'StrList',
-    'Sentinel',
-    'SentinelT'
-]
+__all__ = ["Sentinel", "SentinelT", "StrList"]
 
 
 class StrList(list[SupportsString]):
     """Custom class for representing a recursively "stringable" list."""
 
     if TYPE_CHECKING:
-        @overload
-        def __init__(self, __iterable: Iterable[SupportsString | None] = []) -> None:
-            ...
 
-        @overload
-        def __init__(self, __iterable: Iterable[Iterable[SupportsString | None] | None] = []) -> None:
-            ...
-
-        def __init__(self, __iterable: Any = []) -> None:
-            ...
+        def __init__(self, iterable: Iterable[SupportsString | None] | None = ..., /) -> None: ...
 
     @property
     def string(self) -> str:
@@ -40,21 +28,16 @@ class StrList(list[SupportsString]):
     def __str__(self) -> str:
         from ..functions import flatten
 
-        return ' '.join(
-            filter(
-                None,
-                (str(x).strip() for x in flatten(self) if x is not None)
-            )
-        )
+        return " ".join(filter(None, (str(x).strip() for x in flatten(self) if x is not None)))
 
-    def __add__(self, __x: list[SupportsString]) -> StrList:  # type: ignore[override]
-        return StrList(super().__add__(__x))
+    def __add__(self, x: list[SupportsString]) -> StrList:  # type: ignore[override]
+        return StrList(super().__add__(x))
 
-    def __mul__(self, __n: SupportsIndex) -> StrList:
-        return StrList(super().__mul__(__n))
+    def __mul__(self, n: SupportsIndex) -> StrList:
+        return StrList(super().__mul__(n))
 
-    def __rmul__(self, __n: SupportsIndex) -> StrList:
-        return StrList(super().__rmul__(__n))
+    def __rmul__(self, n: SupportsIndex) -> StrList:
+        return StrList(super().__rmul__(n))
 
     @property
     def mlength(self) -> int:
@@ -98,7 +81,7 @@ class SentinelDispatcher:
             _sentinels[name] = SentinelDispatcher()
         return _sentinels[name]
 
-    def __setattr__(self, __name: str, __value: Any) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:
         raise NameError
 
     def __call__(self) -> SentinelDispatcher:
