@@ -2,15 +2,13 @@ from __future__ import annotations
 
 from .base import CustomError, CustomPermissionError
 
-
 __all__ = [
-    'FileNotExistsError',
-    'FileWasNotFoundError',
-    'FilePermissionError',
-    'FileTypeMismatchError',
-    'FileIsADirectoryError',
-
-    'PathIsNotADirectoryError',
+    "FileIsADirectoryError",
+    "FileNotExistsError",
+    "FilePermissionError",
+    "FileTypeMismatchError",
+    "FileWasNotFoundError",
+    "PathIsNotADirectoryError",
 ]
 
 

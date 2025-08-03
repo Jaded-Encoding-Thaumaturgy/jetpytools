@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Concatenate, overload
 from inspect import signature
+from typing import Any, Callable, Concatenate, overload
 
 from ..exceptions import CustomRuntimeError, CustomValueError
 from ..types import MISSING, KwargsT, MissingT, P, R, T
 
-__all__ = [
-    'iterate', 'fallback', 'kwargs_fallback', 'filter_kwargs'
-]
+__all__ = ["fallback", "filter_kwargs", "iterate", "kwargs_fallback"]
 
 
 def iterate(
-    base: T, function: Callable[Concatenate[T | R, P], R],
-    count: int, *args: P.args, **kwargs: P.kwargs
+    base: T, function: Callable[Concatenate[T | R, P], R], count: int, *args: P.args, **kwargs: P.kwargs
 ) -> T | R:
     """
     Execute a given function over the base value multiple times.
@@ -51,28 +48,23 @@ fallback_missing = object()
 
 
 @overload
-def fallback(value: T | None, fallback: T, /) -> T:
-    ...
+def fallback(value: T | None, fallback: T, /) -> T: ...
 
 
 @overload
-def fallback(value: T | None, fallback0: T | None, default: T, /) -> T:
-    ...
+def fallback(value: T | None, fallback0: T | None, default: T, /) -> T: ...
 
 
 @overload
-def fallback(value: T | None, fallback0: T | None, fallback1: T | None, default: T, /) -> T:
-    ...
+def fallback(value: T | None, fallback0: T | None, fallback1: T | None, default: T, /) -> T: ...
 
 
 @overload
-def fallback(value: T | None, *fallbacks: T | None) -> T | MissingT:
-    ...
+def fallback(value: T | None, *fallbacks: T | None) -> T | MissingT: ...
 
 
 @overload
-def fallback(value: T | None, *fallbacks: T | None, default: T) -> T:
-    ...
+def fallback(value: T | None, *fallbacks: T | None, default: T) -> T: ...
 
 
 def fallback(value: T | None, *fallbacks: T | None, default: Any | T = fallback_missing) -> T | MissingT:
@@ -106,47 +98,36 @@ def fallback(value: T | None, *fallbacks: T | None, default: Any | T = fallback_
     elif len(fallbacks) > 3:
         return MISSING
 
-    raise CustomRuntimeError('You need to specify a default/fallback value!')
+    raise CustomRuntimeError("You need to specify a default/fallback value!")
+
+
+@overload
+def kwargs_fallback(input_value: T | None, kwargs: tuple[KwargsT, str], fallback: T) -> T: ...
+
+
+@overload
+def kwargs_fallback(input_value: T | None, kwargs: tuple[KwargsT, str], fallback0: T | None, default: T) -> T: ...
 
 
 @overload
 def kwargs_fallback(
-    input_value: T | None, kwargs: tuple[KwargsT, str], fallback: T
-) -> T:
-    ...
+    input_value: T | None, kwargs: tuple[KwargsT, str], fallback0: T | None, fallback1: T | None, default: T
+) -> T: ...
 
 
 @overload
-def kwargs_fallback(
-    input_value: T | None, kwargs: tuple[KwargsT, str], fallback0: T | None, default: T
-) -> T:
-    ...
+def kwargs_fallback(input_value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None) -> T | MissingT: ...
 
 
 @overload
-def kwargs_fallback(
-    input_value: T | None, kwargs: tuple[KwargsT, str], fallback0: T | None, fallback1: T | None,
-    default: T
-) -> T:
-    ...
-
-
-@overload
-def kwargs_fallback(
-    input_value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None
-) -> T | MissingT:
-    ...
-
-
-@overload
-def kwargs_fallback(
-    input_value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None, default: T
-) -> T:
-    ...
+def kwargs_fallback(input_value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None, default: T) -> T: ...
 
 
 def kwargs_fallback(  # type: ignore
-    value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None, default: T = fallback_missing  # type: ignore
+    value: T | None,
+    kwargs: tuple[KwargsT, str],
+    *fallbacks: T | None,
+    default: T = fallback_missing,  # type: ignore
 ) -> T | MissingT:
     """Utility function to return a fallback value from kwargs if value was not found or is None."""
 
@@ -154,13 +135,11 @@ def kwargs_fallback(  # type: ignore
 
 
 @overload
-def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any]) -> dict[str, Any]:
-    ...
+def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any]) -> dict[str, Any]: ...
 
 
 @overload
-def filter_kwargs(func: Callable[..., Any], **kwargs: Any) -> dict[str, Any]:
-    ...
+def filter_kwargs(func: Callable[..., Any], **kwargs: Any) -> dict[str, Any]: ...
 
 
 def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any] | None = None, **kw: Any) -> dict[str, Any]:

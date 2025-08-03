@@ -1,33 +1,32 @@
 from __future__ import annotations
 
-from fractions import Fraction
 import sys
+from fractions import Fraction
 from typing import Any, Callable, Iterable, Iterator, Sequence, overload
 
-from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, T, is_soft_range_n
 from ..exceptions import CustomOverflowError
+from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, T, is_soft_range_n
 
 __all__ = [
-    'normalize_seq',
-    'to_arr',
-    'flatten',
-    'normalize_list_to_ranges',
-    'normalize_ranges_to_list',
-    'normalize_range',
-    'normalize_ranges',
-    'invert_ranges',
-    'norm_func_name', 'norm_display_name'
+    "flatten",
+    "invert_ranges",
+    "norm_display_name",
+    "norm_func_name",
+    "normalize_list_to_ranges",
+    "normalize_range",
+    "normalize_ranges",
+    "normalize_ranges_to_list",
+    "normalize_seq",
+    "to_arr",
 ]
 
 
 @overload
-def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
-    ...
+def normalize_seq(val: T | Sequence[T], length: int) -> list[T]: ...
 
 
 @overload
-def normalize_seq(val: Any, length: int) -> list[Any]:
-    ...
+def normalize_seq(val: Any, length: int) -> list[Any]: ...
 
 
 def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
@@ -50,13 +49,11 @@ def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
 
 
 @overload
-def to_arr(val: T | Iterable[T]) -> list[T]:
-    ...
+def to_arr(val: T | Iterable[T]) -> list[T]: ...
 
 
 @overload
-def to_arr(val: Any) -> list[Any]:
-    ...
+def to_arr(val: Any) -> list[Any]: ...
 
 
 def to_arr(val: Any, *, sub: Any = []) -> list[Any]:
@@ -66,19 +63,18 @@ def to_arr(val: Any, *, sub: Any = []) -> list[Any]:
     """
     if sub:
         import warnings
+
         warnings.warn("sub is deprecated.", DeprecationWarning)
 
     return list(val) if (isinstance(val, Iterable) and not isinstance(val, (str, bytes))) else [val]
 
 
 @overload
-def flatten(items: Iterable[Iterable[T]]) -> Iterator[T]:
-    ...
+def flatten(items: Iterable[Iterable[T]]) -> Iterator[T]: ...
 
 
 @overload
-def flatten(items: Iterable[Any]) -> Iterator[Any]:
-    ...
+def flatten(items: Iterable[Any]) -> Iterator[Any]: ...
 
 
 def flatten(items: Any) -> Iterator[Any]:
@@ -125,10 +121,9 @@ def normalize_list_to_ranges(flist: Iterable[int], min_length: int = 0, exclusiv
     prev_n = -1
 
     for n in sorted(set(flist)):
-        if prev_n + 1 != n:
-            if flist3:
-                flist2.append(flist3)
-                flist3 = []
+        if prev_n + 1 != n and flist3:
+            flist2.append(flist3)
+            flist3.clear()
         flist3.append(n)
         prev_n = n
 
@@ -137,10 +132,7 @@ def normalize_list_to_ranges(flist: Iterable[int], min_length: int = 0, exclusiv
 
     flist4 = [i for i in flist2 if len(i) > min_length]
 
-    return list(zip(
-        [i[0] for i in flist4],
-        [i[-1] + exclusive for i in flist4]
-    ))
+    return list(zip([i[0] for i in flist4], [i[-1] + exclusive for i in flist4]))
 
 
 def normalize_ranges_to_list(ranges: Iterable[SoftRange], exclusive: bool = False) -> list[int]:
@@ -153,11 +145,7 @@ def normalize_ranges_to_list(ranges: Iterable[SoftRange], exclusive: bool = Fals
 
 
 def normalize_ranges(
-    ranges: SoftRangeN | SoftRangesN,
-    length: int,
-    exclusive: bool = False,
-    *,
-    strict: bool = True
+    ranges: SoftRangeN | SoftRangesN, length: int, exclusive: bool = False, *, strict: bool = True
 ) -> list[StrictRange]:
     """
     Normalize ranges to a list of positive ranges.
@@ -216,11 +204,13 @@ def normalize_ranges(
         # Always throws an error if start and end are negative
         # or higher than length
         # or start is higher than end (likely mismatched)
-        if any([
-            start < 0 and end < 0,
-            start >= length and end - (not exclusive) > length,
-            start >= end + (not exclusive),
-        ]):
+        if any(
+            [
+                start < 0 and end < 0,
+                start >= length and end - (not exclusive) > length,
+                start >= end + (not exclusive),
+            ]
+        ):
             exception = CustomOverflowError(
                 f"Range `{r}` with length `{length}` could not be normalized!", normalize_ranges
             )
@@ -231,14 +221,14 @@ def normalize_ranges(
             if start < 0:
                 exception = CustomOverflowError(
                     f"Start frame `{start}` in range `{r}` with length `{length}` could not be normalized!",
-                    normalize_ranges
+                    normalize_ranges,
                 )
                 exceptions.append(exception)
                 continue
             if end - (not exclusive) > length:
                 exception = CustomOverflowError(
                     f"End frame `{end}` in range `{r}` with length `{length}` could not be normalized!",
-                    normalize_ranges
+                    normalize_ranges,
                 )
                 exceptions.append(exception)
                 continue
@@ -255,8 +245,7 @@ def normalize_ranges(
         raise Exception(exceptions)
 
     return normalize_list_to_ranges(
-        [x for start, end in out for x in range(start, end + (not exclusive))],
-        exclusive=exclusive
+        [x for start, end in out for x in range(start, end + (not exclusive))], exclusive=exclusive
     )
 
 
@@ -281,15 +270,14 @@ def norm_func_name(func_name: SupportsString | Callable[..., Any]) -> str:
 
     func = func_name
 
-    if hasattr(func_name, '__name__'):
+    if hasattr(func_name, "__name__"):
         func_name = func.__name__
-    elif hasattr(func_name, '__qualname__'):
+    elif hasattr(func_name, "__qualname__"):
         func_name = func.__qualname__
 
-    if callable(func):
-        if hasattr(func, '__self__'):
-            func = func.__self__ if isinstance(func.__self__, type) else func.__self__.__class__
-            func_name = f'{func.__name__}.{func_name}'
+    if callable(func) and hasattr(func, "__self__"):
+        func = func.__self__ if isinstance(func.__self__, type) else func.__self__.__class__
+        func_name = f"{func.__name__}.{func_name}"
 
     return str(func_name).strip()
 
@@ -298,12 +286,12 @@ def norm_display_name(obj: object) -> str:
     """Get a fancy name from any object."""
 
     if isinstance(obj, Iterator):
-        return ', '.join(norm_display_name(v) for v in obj).strip()
+        return ", ".join(norm_display_name(v) for v in obj).strip()
 
     if isinstance(obj, Fraction):
-        return f'{obj.numerator}/{obj.denominator}'
+        return f"{obj.numerator}/{obj.denominator}"
 
     if isinstance(obj, dict):
-        return '(' + ', '.join(f'{k}={v}' for k, v in obj.items()) + ')'
+        return "(" + ", ".join(f"{k}={v}" for k, v in obj.items()) + ")"
 
     return norm_func_name(obj)

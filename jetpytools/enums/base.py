@@ -8,9 +8,7 @@ from typing_extensions import Self
 from ..exceptions import CustomValueError, NotFoundEnumValue
 from ..types import FuncExceptT
 
-__all__ = [
-    'CustomEnum', 'CustomIntEnum', 'CustomStrEnum'
-]
+__all__ = ["CustomEnum", "CustomIntEnum", "CustomStrEnum"]
 
 
 class CustomEnum(Enum):
@@ -43,7 +41,7 @@ class CustomEnum(Enum):
             return value
 
         if value is cls:
-            raise CustomValueError('You must select a member, not pass the enum!', func_except)
+            raise CustomValueError("You must select a member, not pass the enum!", func_except)
 
         try:
             return cls(value)
@@ -57,10 +55,13 @@ class CustomEnum(Enum):
 
         raise NotFoundEnumValue(
             'The given value for "{var_name}" argument must be a valid {enum_name}, not "{value}"!\n'
-            'Valid values are: [{readable_enum}].', func_name,
-            var_name=var_name, enum_name=cls, value=value,
-            readable_enum=iter([f'{x.name} ({x.value})' for x in cls]),
-            reason=value
+            "Valid values are: [{readable_enum}].",
+            func_name,
+            var_name=var_name,
+            enum_name=cls,
+            value=value,
+            readable_enum=iter([f"{x.name} ({x.value})" for x in cls]),
+            reason=value,
         )
 
 
