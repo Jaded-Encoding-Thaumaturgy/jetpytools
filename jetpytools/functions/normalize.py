@@ -123,7 +123,7 @@ def normalize_list_to_ranges(flist: Iterable[int], min_length: int = 0, exclusiv
     for n in sorted(set(flist)):
         if prev_n + 1 != n and flist3:
             flist2.append(flist3)
-            flist3.clear()
+            flist3 = []
         flist3.append(n)
         prev_n = n
 
