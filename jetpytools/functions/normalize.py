@@ -207,7 +207,7 @@ def normalize_ranges(
         if any(
             [
                 start < 0 and end < 0,
-                start >= length and end - (not exclusive) > length,
+                start >= length and end + (not exclusive) > length,
                 start >= end + (not exclusive),
             ]
         ):
@@ -225,7 +225,7 @@ def normalize_ranges(
                 )
                 exceptions.append(exception)
                 continue
-            if end - (not exclusive) > length:
+            if end + (not exclusive) > length:
                 exception = CustomOverflowError(
                     f"End frame `{end}` in range `{r}` with length `{length}` could not be normalized!",
                     normalize_ranges,
