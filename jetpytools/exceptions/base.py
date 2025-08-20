@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import sys
+from contextlib import AbstractContextManager
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, TypeVar
+from types import TracebackType
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from typing_extensions import Self
 
@@ -182,8 +184,51 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
 
             self.__notes__.append(note)
 
+    @classmethod
+    def catch(cls) -> CatchError[Self]:
+        """
+        Create a context manager that catches exceptions of this class type.
+
+        Returns:
+            CatchError[Self]: A context manager that will catch and store exceptions of type `cls`
+                when used in a `with` block.
+        """
+        return CatchError(cls)
+
 
 SelfError = TypeVar("SelfError", bound=CustomError)
+
+
+class CatchError(AbstractContextManager["CatchError[SelfError]"], Generic[SelfError]):
+    """
+    Context manager for catching a specific exception type.
+    """
+
+    error: SelfError | None
+    """The caught exception instance, if any."""
+    tb: TracebackType | None
+    """The traceback object associated with the caught exception."""
+
+    def __init__(self, error: type[SelfError]) -> None:
+        self.error = None
+        self.tb = None
+        self._to_catch_error = error
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
+        if isinstance(exc_value, self._to_catch_error):
+            self.error = exc_value
+            self.tb = traceback
+            return True
+
+        return None
 
 
 class CustomValueError(CustomError, ValueError):
