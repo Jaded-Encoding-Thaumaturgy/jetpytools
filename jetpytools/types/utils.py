@@ -410,7 +410,9 @@ class classproperty(Generic[T, R]):
     def __init__(
         self,
         fget: Callable[[type[T]], R] | classmethod[T, ..., R],
-        fset: Callable[[type[T], R], None] | classmethod[T, Concatenate[R, ...], None] | None = None,
+        fset: Callable[Concatenate[type[T], Any, ...], None]
+        | classmethod[T, Concatenate[Any, ...], None]
+        | None = None,
         fdel: Callable[[type[T]], None] | classmethod[T, ..., None] | None = None,
         doc: str | None = None,
     ) -> None:
