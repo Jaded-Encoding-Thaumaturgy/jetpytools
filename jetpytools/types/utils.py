@@ -421,6 +421,7 @@ class classproperty(Generic[T, R]):
         self.fdel = self._wrap(fdel) if fdel is not None else fdel
 
         self.__doc__ = doc
+        self.__name__ = self.fget.__name__
 
     def _wrap(self, func: Callable[..., R1] | classmethod[T, P1, R1]) -> classmethod[T, P1, R1]:
         if not isinstance(func, classmethod):
@@ -450,9 +451,6 @@ class classproperty(Generic[T, R]):
 
         self.fdel.__get__(None, type(obj))()
 
-    @property
-    def __name__(self) -> str:
-        return self.fget.__name__
 
 
 class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
