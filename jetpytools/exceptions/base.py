@@ -175,7 +175,7 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
 
         return out
 
-    if sys.version_info < (3, 13):
+    if sys.version_info < (3, 11):
         __notes__: list[str]
 
         def add_note(self, note: str, /) -> None:
