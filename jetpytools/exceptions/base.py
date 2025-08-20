@@ -166,7 +166,21 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
         else:
             reason = ""
 
-        return f"{func_header}{self.message!s}{reason}".format(**self.kwargs).strip()
+        out = f"{func_header}{self.message!s}{reason}".format(**self.kwargs).strip()
+
+        if sys.version_info < (3, 13) and hasattr(self, "__notes__"):
+            out += "\n" + "\n".join(self.__notes__)
+
+        return out
+
+    if sys.version_info < (3, 13):
+        __notes__: list[str]
+
+        def add_note(self, note: str, /) -> None:
+            if not hasattr(self, "__notes__"):
+                self.__notes__ = []
+
+            self.__notes__.append(note)
 
 
 SelfError = TypeVar("SelfError", bound=CustomError)
