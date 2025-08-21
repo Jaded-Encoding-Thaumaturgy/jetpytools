@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from contextlib import suppress
 from functools import wraps
 from inspect import Signature
@@ -548,6 +549,12 @@ class cachedproperty(property, Generic[R_co]):
         def setter(self, fset: Callable[[Any, Any], None]) -> cachedproperty[R_co]: ...
 
         def deleter(self, fdel: Callable[..., None]) -> cachedproperty[R_co]: ...
+
+    if sys.version_info < (3, 13):
+
+        def __init__(self, fget: Any, fset: Any | None = None, fdel: Any | None = None, doc: str | None = None) -> None:
+            self.__name__ = fget.__name__
+            super().__init__(fget, fset, fdel, doc)
 
     @overload
     def __get__(self, instance: None, owner: type | None = None) -> Self: ...
