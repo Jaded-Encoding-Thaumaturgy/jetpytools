@@ -511,6 +511,27 @@ class cachedproperty(property, Generic[R_co]):
 
         return super().__delete__(instance)
 
+    @classmethod
+    def clear_cache(cls, obj: object, names: str | Iterable[str] | None = None) -> None:
+        """
+        Clear cached properties of an object instance.
+
+        :param obj:   The object whose cache should be cleared.
+        :param names: Specific property names to clear. If None, all cached properties are cleared.
+        """
+        if names is None:
+            obj.__dict__.get(cls.cache_key, {}).clear()
+            return None
+
+        from ..functions import to_arr
+
+        cache = obj.__dict__.get(cls.cache_key, {})
+
+        for name in to_arr(names):
+            with suppress(KeyError):
+                del cache[name]
+
+
 class KwargsNotNone(KwargsT):
     """Remove all None objects from this kwargs dict."""
 
