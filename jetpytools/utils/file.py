@@ -48,7 +48,8 @@ def get_script_path() -> SPath:
     import __main__
 
     try:
-        return SPath(__main__.__file__)
+        path = SPath(__main__.__file__)
+        return path if path.exists() else SPath.cwd()
     except AttributeError:
         return SPath.cwd()
 
