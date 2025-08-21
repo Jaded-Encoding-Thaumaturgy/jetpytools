@@ -449,37 +449,22 @@ class classproperty(Generic[T, R]):
                 f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no deleter.'
             )
 
-        self.fdel.__get__(None, type(obj))()
-
-
-
-class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
+class cachedproperty(property, Generic[R_co]):
     """
     Wrapper for a one-time get property, that will be cached.
 
-    Keep in mind two things:
-
-     * The cache is per-object. Don't hold a reference to itself or it will never get garbage collected.
-     * Your class has to either manually set __dict__[cachedproperty.cache_key]
-       or inherit from cachedproperty.baseclass.
+    You shouldn't hold a reference to itself or it will never get garbage collected.
     """
 
     __isabstractmethod__: bool = False
 
     cache_key = "_jetpt_cachedproperty_cache"
 
+    @deprecated(
+        "The cache dict is now set automatically. You no longer need to inherit from it", category=DeprecationWarning
+    )
     class baseclass:
         """Inherit from this class to automatically set the cache dict."""
-
-        if not TYPE_CHECKING:
-
-            def __new__(cls, *args: Any, **kwargs: Any) -> None:
-                try:
-                    self = super().__new__(cls, *args, **kwargs)
-                except TypeError:
-                    self = super().__new__(cls)
-                self.__dict__.__setitem__(cachedproperty.cache_key, dict[str, Any]())
-                return self
 
     if TYPE_CHECKING:
 
@@ -498,36 +483,21 @@ class cachedproperty(property, Generic[P, R_co, T, T0, P0]):
         def deleter(self, fdel: Callable[P1, None]) -> cachedproperty[P, R_co, T, T0, P1]: ...
 
     @overload
-    def __get__(self, obj: None, type_: type | None = None) -> Self: ...
+    def __get__(self, instance: None, owner: type | None = None) -> Self: ...
 
     @overload
-    def __get__(self, obj: object, type_: type | None = None) -> R_co: ...
+    def __get__(self, instance: Any, owner: type | None = None) -> R_co: ...
 
-    def __get__(self, obj: Any, type_: type | None = None) -> Any:
-        if isinstance(self.fget, classproperty):
-            function = partial(self.fget.__get__, obj, type_)  # type: ignore
-            obj = type_
+    def __get__(self, instance: Any, owner: type | None = None) -> Any:
+        if instance is None:
+            return self
 
-            if not hasattr(obj, cachedproperty.cache_key):
-                setattr(obj, cachedproperty.cache_key, dict[str, Any]())
+        if self.__name__ in (cache := instance.__dict__.setdefault(self.cache_key, {})):
+            return cache[self.__name__]
 
-            cache = getattr(obj, cachedproperty.cache_key)
-            name = self.fget.__name__
-        else:
-            assert self.fget
-            function = self.fget.__get__(obj, type_)
-            cache = obj.__dict__.get(cachedproperty.cache_key)
-            name = function.__name__
-
-        if name not in cache:
-            cache[name] = function()
-
-        return cache[name]
-
-    if TYPE_CHECKING:
-
-        def __set__(self, obj: Any, value: R_co, /) -> None:  # type: ignore[misc]
-            ...
+        value = super().__get__(instance, owner)
+        cache[self.__name__] = value
+        return value
 
 
 class KwargsNotNone(KwargsT):
