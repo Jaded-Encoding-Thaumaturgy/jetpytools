@@ -499,6 +499,17 @@ class cachedproperty(property, Generic[R_co]):
         cache[self.__name__] = value
         return value
 
+    def __set__(self, instance: Any, value: Any) -> None:
+        if self.__name__ in (cache := instance.__dict__.setdefault(self.cache_key, {})):
+            del cache[self.__name__]
+
+        return super().__set__(instance, value)
+
+    def __delete__(self, instance: Any) -> None:
+        if self.__name__ in (cache := instance.__dict__.setdefault(self.cache_key, {})):
+            del cache[self.__name__]
+
+        return super().__delete__(instance)
 
 class KwargsNotNone(KwargsT):
     """Remove all None objects from this kwargs dict."""
