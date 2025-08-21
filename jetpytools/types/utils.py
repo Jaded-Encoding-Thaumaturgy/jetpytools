@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from functools import partial, wraps
+from contextlib import suppress
+from functools import wraps
 from inspect import Signature
 from inspect import _empty as empty_param
 from typing import (
@@ -21,9 +22,9 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
-from .builtins import F0, F1, P0, P1, R0, R1, T0, T1, T2, KwargsT, P, R, R0_co, R1_co, R_co, T, T0_co, T1_co, T_co
+from .builtins import F0, F1, P0, P1, R0, R1, T0, KwargsT, P, R, R0_co, R1_co, R_co, T, T0_co, T1_co, T_co
 
 __all__ = [
     "KwargsNotNone",
@@ -400,16 +401,12 @@ def get_subclasses(family: type[T], exclude: Sequence[type[T]] = []) -> list[typ
     return list(set(_subclasses(family)))
 
 
-class classproperty(Generic[T, R]):
-    """
-    Make a class property. A combination between classmethod and property.
-    """
-
+class classproperty_base(Generic[T, R_co]):
     __isabstractmethod__: bool = False
 
     def __init__(
         self,
-        fget: Callable[[type[T]], R] | classmethod[T, ..., R],
+        fget: Callable[[type[T]], R_co] | classmethod[T, ..., R_co],
         fset: Callable[Concatenate[type[T], Any, ...], None]
         | classmethod[T, Concatenate[Any, ...], None]
         | None = None,
@@ -429,11 +426,30 @@ class classproperty(Generic[T, R]):
 
         return func
 
-    def __get__(self, obj: T | None, type_: type | None = None) -> R:
+    def __set_name__(self, owner: object, name: str) -> None:
+        self.__name__ = name
+
+    def _get_cache(self, type_: type) -> dict[str, Any]:
+        cache_key = getattr(self, "cache_key")
+
+        if not hasattr(type_, cache_key):
+            setattr(type_, cache_key, {})
+
+        return getattr(type_, cache_key)
+
+    def __get__(self, obj: T | None, type_: type | None = None) -> R_co:
         if type_ is None:
             type_ = type(obj)
 
-        return self.fget.__get__(obj, type_)()
+        if not isinstance(self, classproperty.cached):
+            return self.fget.__get__(obj, type_)()
+
+        if self.__name__ in (cache := self._get_cache(type_)):
+            return cache[self.__name__]
+
+        value = self.fget.__get__(obj, type_)()
+        cache[self.__name__] = value
+        return value
 
     def __set__(self, obj: T, value: Any) -> None:
         if not self.fset:
@@ -441,13 +457,64 @@ class classproperty(Generic[T, R]):
                 f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no setter.'
             )
 
-        self.fset.__get__(None, type(obj))(value)
+        type_ = type(obj)
+
+        if self.__name__ in (cache := self._get_cache(type_)):
+            del cache[self.__name__]
+
+        self.fset.__get__(None, type_)(value)
 
     def __delete__(self, obj: T) -> None:
         if not self.fdel:
             raise AttributeError(
                 f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no deleter.'
             )
+
+        type_ = type(obj)
+
+        if self.__name__ in (cache := self._get_cache(type_)):
+            del cache[self.__name__]
+
+        self.fdel.__get__(None, type_)()
+
+
+class classproperty(classproperty_base[T, R_co]):
+    """
+    A combination of `classmethod` and `property`.
+    """
+
+    class cached(classproperty_base[T0, R0_co]):
+        """
+        A combination of `classmethod` and `property`.
+
+        The value is computed once and then cached in a dictionary (under `cache_key`)
+        attached to the class type. If a setter or deleter is defined and invoked,
+        the cache is cleared.
+        """
+
+        cache_key = "_jetpt_classproperty_cached"
+
+        @classmethod
+        def clear_cache(cls, type_: type, names: str | Iterable[str] | None = None) -> None:
+            """
+            Clear cached properties of an type instance.
+
+            :param type_:   The type whose cache should be cleared.
+            :param names:   Specific property names to clear. If None, all cached properties are cleared.
+            """
+            if names is None:
+                with suppress(AttributeError):
+                    getattr(type_, cls.cache_key).clear()
+                return None
+
+            from ..functions import to_arr
+
+            cache = getattr(type_, cls.cache_key, {})
+
+            for name in to_arr(names):
+                with suppress(KeyError):
+                    del cache[name]
+
 
 class cachedproperty(property, Generic[R_co]):
     """
