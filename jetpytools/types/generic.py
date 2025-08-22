@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum, auto
-from typing import Any, Callable, Literal, TypeAlias, Union
+from typing import Any, Callable, TypeAlias, Union
 
 from .builtins import F, SingleOrArr, SingleOrArrOpt
 from .supports import SupportsString
@@ -9,12 +8,15 @@ from .supports import SupportsString
 __all__ = ["MISSING", "DataType", "FuncExcept", "MissingT", "PassthroughC", "StrArr", "StrArrOpt"]
 
 
-class MissingTBase(Enum):
-    MissingT = auto()
+class _MissingType:
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return "<MISSING>"
 
 
-MissingT: TypeAlias = Literal[MissingTBase.MissingT]
-MISSING = MissingTBase.MissingT
+MissingT: TypeAlias = _MissingType
+MISSING = _MissingType()
 
 DataType = Union[str, bytes, bytearray, SupportsString]
 
