@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from typing_extensions import Self
 
-from ..types import MISSING, FuncExceptT, MissingT, SupportsString
+from ..types import MISSING, FuncExcept, MissingT, SupportsString
 
 __all__ = [
     "CustomError",
@@ -80,7 +80,7 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
     """Custom base exception class."""
 
     def __init__(
-        self, message: SupportsString | None = None, func: FuncExceptT | None = None, reason: Any = None, **kwargs: Any
+        self, message: SupportsString | None = None, func: FuncExcept | None = None, reason: Any = None, **kwargs: Any
     ) -> None:
         """
         Instantiate a new exception with pretty printing and more.
@@ -107,8 +107,8 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
     def __call__(
         self,
         message: SupportsString | None | MissingT = MISSING,
-        func: FuncExceptT | None | MissingT = MISSING,
-        reason: SupportsString | FuncExceptT | None | MissingT = MISSING,
+        func: FuncExcept | None | MissingT = MISSING,
+        reason: SupportsString | FuncExcept | None | MissingT = MISSING,
         **kwargs: Any,
     ) -> Self:
         """

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..types import FuncExceptT, SupportsString
+from ..types import FuncExcept, SupportsString
 from .base import CustomError
 
 __all__ = ["CustomImportError", "DependencyNotFoundError"]
@@ -13,7 +13,7 @@ class CustomImportError(CustomError, ImportError):
 
     def __init__(
         self,
-        func: FuncExceptT,
+        func: FuncExcept,
         package: str | ImportError,
         message: SupportsString = "Import failed for package '{package}'!",
         **kwargs: Any,
@@ -32,7 +32,7 @@ class DependencyNotFoundError(CustomImportError):
 
     def __init__(
         self,
-        func: FuncExceptT,
+        func: FuncExcept,
         package: str | ImportError,
         message: SupportsString = "Missing dependency '{package}'!",
         **kwargs: Any,

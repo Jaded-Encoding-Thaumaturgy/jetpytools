@@ -11,7 +11,7 @@ from ..exceptions import FileIsADirectoryError, FileNotExistsError, FilePermissi
 from ..types import (
     FileOpener,
     FilePathType,
-    FuncExceptT,
+    FuncExcept,
     OpenBinaryMode,
     OpenBinaryModeReading,
     OpenBinaryModeUpdating,
@@ -73,7 +73,7 @@ def get_user_data_dir() -> Path:
 
 
 def check_perms(
-    file: FilePathType, mode: OpenTextMode | OpenBinaryMode, strict: bool = False, *, func: FuncExceptT | None = None
+    file: FilePathType, mode: OpenTextMode | OpenBinaryMode, strict: bool = False, *, func: FuncExcept | None = None
 ) -> bool:
     """
     Confirm whether the user has write/read access to a file.
@@ -140,7 +140,7 @@ def open_file(
     errors: str | None = ...,
     newline: str | None = ...,
     *,
-    func: FuncExceptT | None = None,
+    func: FuncExcept | None = None,
 ) -> TextIOWrapper: ...
 
 
@@ -151,7 +151,7 @@ def open_file(
     buffering: Literal[0],
     encoding: None = None,
     *,
-    func: FuncExceptT | None = None,
+    func: FuncExcept | None = None,
 ) -> FileIO: ...
 
 
@@ -162,7 +162,7 @@ def open_file(
     buffering: Literal[-1, 1] = ...,
     encoding: None = None,
     *,
-    func: FuncExceptT | None = None,
+    func: FuncExcept | None = None,
 ) -> BufferedRandom: ...
 
 
@@ -173,7 +173,7 @@ def open_file(
     buffering: Literal[-1, 1] = ...,
     encoding: None = None,
     *,
-    func: FuncExceptT | None = None,
+    func: FuncExcept | None = None,
 ) -> BufferedWriter: ...
 
 
@@ -184,7 +184,7 @@ def open_file(
     buffering: Literal[-1, 1] = ...,
     encoding: None = None,
     *,
-    func: FuncExceptT | None = None,
+    func: FuncExcept | None = None,
 ) -> BufferedReader: ...
 
 
@@ -195,7 +195,7 @@ def open_file(
     buffering: int = ...,
     encoding: None = None,
     *,
-    func: FuncExceptT | None = None,
+    func: FuncExcept | None = None,
 ) -> BinaryIO: ...
 
 
@@ -210,11 +210,11 @@ def open_file(
     closefd: bool = ...,
     opener: FileOpener | None = ...,
     *,
-    func: FuncExceptT | None = None,
+    func: FuncExcept | None = None,
 ) -> IO[Any]: ...
 
 
-def open_file(file: FilePathType, mode: Any = "r+", *args: Any, func: FuncExceptT | None = None, **kwargs: Any) -> Any:
+def open_file(file: FilePathType, mode: Any = "r+", *args: Any, func: FuncExcept | None = None, **kwargs: Any) -> Any:
     """
     Open file and return a stream. Raise OSError upon failure.
 

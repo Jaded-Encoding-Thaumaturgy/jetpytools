@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from ..types import FuncExceptT, SupportsString, T
+from ..types import FuncExcept, SupportsString, T
 from .base import CustomValueError
 
 __all__ = ["MismatchError", "MismatchRefError"]
@@ -21,7 +21,7 @@ class MismatchError(CustomValueError):
 
     def __init__(
         self,
-        func: FuncExceptT,
+        func: FuncExcept,
         items: Iterable[Any],
         message: SupportsString = "All items must be equal!",
         reason: Any = "{reduced_items}",
@@ -30,18 +30,18 @@ class MismatchError(CustomValueError):
         super().__init__(message, func, reason, **kwargs, reduced_items=iter(self._reduce(items)))
 
     @classmethod
-    def check(cls, func: FuncExceptT, /, *items: Any, **kwargs: Any) -> None:
+    def check(cls, func: FuncExcept, /, *items: Any, **kwargs: Any) -> None:
         if len(cls._reduce(items)) != 1:
             raise cls(func, items, **kwargs)
 
 
 class MismatchRefError(MismatchError):
     def __init__(
-        self, func: FuncExceptT, base: T, ref: T, message: SupportsString = "All items must be equal!", **kwargs: Any
+        self, func: FuncExcept, base: T, ref: T, message: SupportsString = "All items must be equal!", **kwargs: Any
     ) -> None:
         super().__init__(func, [base, ref], message, **kwargs)
 
     @classmethod
-    def check(cls, func: FuncExceptT, /, *items: Any, **kwargs: Any) -> None:
+    def check(cls, func: FuncExcept, /, *items: Any, **kwargs: Any) -> None:
         if len(cls._reduce(items)) != 1:
             raise cls(func, *items, **kwargs)

@@ -6,7 +6,7 @@ from typing import Any
 from typing_extensions import Self
 
 from ..exceptions import CustomValueError, NotFoundEnumValue
-from ..types import FuncExceptT
+from ..types import FuncExcept
 
 __all__ = ["CustomEnum", "CustomIntEnum", "CustomStrEnum"]
 
@@ -19,7 +19,7 @@ class CustomEnum(Enum):
         return cls.from_param(value)
 
     @classmethod
-    def from_param(cls, value: Any, func_except: FuncExceptT | None = None) -> Self | None:
+    def from_param(cls, value: Any, func_except: FuncExcept | None = None) -> Self | None:
         """
         Return the enum value from a parameter.
 

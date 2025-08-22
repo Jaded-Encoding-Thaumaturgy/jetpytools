@@ -6,7 +6,7 @@ from typing import Any, Callable, Literal, TypeAlias, Union
 from .builtins import F, SingleOrArr, SingleOrArrOpt
 from .supports import SupportsString
 
-__all__ = ["MISSING", "DataType", "FuncExceptT", "MissingT", "PassthroughC", "StrArr", "StrArrOpt"]
+__all__ = ["MISSING", "DataType", "FuncExcept", "MissingT", "PassthroughC", "StrArr", "StrArrOpt"]
 
 
 class MissingTBase(Enum):
@@ -18,11 +18,11 @@ MISSING = MissingTBase.MissingT
 
 DataType = Union[str, bytes, bytearray, SupportsString]
 
-FuncExceptT = str | Callable[..., Any] | tuple[Callable[..., Any] | str, str]
+FuncExcept = str | Callable[..., Any] | tuple[Callable[..., Any] | str, str]
 """
 This type is used in specific functions that can throw an exception.
 ```
-def can_throw(..., *, func: FuncExceptT) -> None:
+def can_throw(..., *, func: FuncExcept) -> None:
     ...
     if some_error:
         raise CustomValueError('Some error occurred!!', func)
@@ -35,6 +35,7 @@ If an error occurs, this will print a clear error ->\n
 ``ValueError: (some_func) Some error occurred!!``
 """
 
+FuncExceptT = FuncExcept
 
 StrArr = SingleOrArr[SupportsString]
 StrArrOpt = SingleOrArrOpt[SupportsString]
