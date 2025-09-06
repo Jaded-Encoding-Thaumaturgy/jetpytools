@@ -43,9 +43,9 @@ __all__ = [
 # ruff: noqa: N801
 
 
-class copy_signature(Generic[F0]):
+def copy_signature(target: F0, /) -> Callable[[Callable[..., Any]], F0]:
     """
-    Type util to copy the signature of one function to another function.
+    Utility function to copy the signature of one function to another one.
 
     Especially useful for passthrough functions.
 
@@ -71,11 +71,10 @@ class copy_signature(Generic[F0]):
                # another thing
     """
 
-    def __init__(self, target: F0) -> None:
-        """Copy the signature of ``target``."""
-
-    def __call__(self, wrapped: Callable[..., Any]) -> F0:
+    def decorator(wrapped: Callable[..., Any]) -> F0:
         return cast(F0, wrapped)
+
+    return decorator
 
 
 class injected_self_func(Protocol[T_co, P, R_co]):
