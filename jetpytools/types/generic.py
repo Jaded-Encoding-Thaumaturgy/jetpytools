@@ -6,7 +6,7 @@ from typing import Any, Callable, Literal, TypeAlias, Union
 from .builtins import F, SingleOrArr, SingleOrArrOpt
 from .supports import SupportsString
 
-__all__ = ["MISSING", "DataType", "FuncExcept", "MissingT", "PassthroughC", "StrArr", "StrArrOpt"]
+__all__ = ["MISSING", "DataType", "FuncExcept", "FuncExceptT", "MissingT", "PassthroughC", "StrArr", "StrArrOpt"]
 
 
 class _MissingType(Enum):
