@@ -23,7 +23,7 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Self, deprecated
+from typing_extensions import Self, TypeVar, deprecated
 
 from .builtins import F0, F1, P0, P1, R0, R1, T0, KwargsT, P, R, R0_co, R1_co, R_co, T, T0_co, T1_co, T_co
 
@@ -516,7 +516,10 @@ class classproperty(classproperty_base[T, R_co]):
                     del cache[name]
 
 
-class cachedproperty(property, Generic[R_co]):
+_T_cc = TypeVar("_T_cc", default=Any)
+
+
+class cachedproperty(property, Generic[R_co, _T_cc]):
     """
     Wrapper for a one-time get property, that will be cached.
 
@@ -538,16 +541,16 @@ class cachedproperty(property, Generic[R_co]):
         def __init__(
             self,
             fget: Callable[[Any], R_co],
-            fset: Callable[[Any, Any], None] | None = None,
+            fset: Callable[[Any, _T_cc], None] | None = None,
             fdel: Callable[[Any], None] | None = None,
             doc: str | None = None,
         ) -> None: ...
 
-        def getter(self, fget: Callable[..., R_co]) -> cachedproperty[R_co]: ...
+        def getter(self, fget: Callable[..., R_co]) -> cachedproperty[R_co, _T_cc]: ...
 
-        def setter(self, fset: Callable[[Any, Any], None]) -> cachedproperty[R_co]: ...
+        def setter(self, fset: Callable[[Any, _T_cc], None]) -> cachedproperty[R_co, _T_cc]: ...
 
-        def deleter(self, fdel: Callable[..., None]) -> cachedproperty[R_co]: ...
+        def deleter(self, fdel: Callable[..., None]) -> cachedproperty[R_co, _T_cc]: ...
 
     if sys.version_info < (3, 13):
 
@@ -572,7 +575,7 @@ class cachedproperty(property, Generic[R_co]):
         cache[self.__name__] = value
         return value
 
-    def __set__(self, instance: Any, value: Any) -> None:
+    def __set__(self, instance: Any, value: _T_cc) -> None:
         if self.__name__ in (cache := instance.__dict__.setdefault(self.cache_key, {})):
             del cache[self.__name__]
 
@@ -603,6 +606,17 @@ class cachedproperty(property, Generic[R_co]):
         for name in to_arr(names):
             with suppress(KeyError):
                 del cache[name]
+
+    @classmethod
+    def update_cache(cls, obj: object, name: str, value: Any) -> None:
+        """
+        Update cached property of an object instance.
+
+        :param obj:   The object whose cache should be updated.
+        :param names: Property name to update.
+        :param value: The value to assign.
+        """
+        obj.__dict__.setdefault(cls.cache_key, {})[name] = value
 
 
 class KwargsNotNone(KwargsT):
