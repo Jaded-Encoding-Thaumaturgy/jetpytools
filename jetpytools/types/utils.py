@@ -459,6 +459,9 @@ class classproperty_base(Generic[T, R_co]):
 
         type_ = type(obj)
 
+        if not isinstance(self, classproperty.cached):
+            return self.fset(type_, value)
+
         if self.__name__ in (cache := self._get_cache(type_)):
             del cache[self.__name__]
 
@@ -471,6 +474,9 @@ class classproperty_base(Generic[T, R_co]):
             )
 
         type_ = type(obj)
+
+        if not isinstance(self, classproperty.cached):
+            return self.fdel(type_)
 
         if self.__name__ in (cache := self._get_cache(type_)):
             del cache[self.__name__]
