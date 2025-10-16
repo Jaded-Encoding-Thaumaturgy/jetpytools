@@ -25,7 +25,7 @@ from typing import (
 
 from typing_extensions import Self, TypeVar, deprecated
 
-from .builtins import F0, F1, P0, P1, R0, R1, T0, KwargsT, P, R, R0_co, R1_co, R_co, T, T0_co, T1_co, T_co
+from .builtins import F0, F1, P0, P1, R0, T0, KwargsT, P, R, R0_co, R1_co, R_co, T, T0_co, T1_co, T_co
 
 __all__ = [
     "KwargsNotNone",
@@ -408,6 +408,10 @@ _T0_Any = TypeVar("_T0_Any", default=Any)
 class classproperty_base(Generic[T, R_co, _T_Any]):
     __isabstractmethod__: bool = False
 
+    fget: Callable[[type[T]], R_co]
+    fset: Callable[Concatenate[type[T], _T_Any, ...], None] | None
+    fdel: Callable[[type[T]], None] | None
+
     def __init__(
         self,
         fget: Callable[[type[T]], R_co] | classmethod[T, ..., R_co],
@@ -417,23 +421,17 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
         fdel: Callable[[type[T]], None] | classmethod[T, ..., None] | None = None,
         doc: str | None = None,
     ) -> None:
-        self.fget = self._wrap(fget)
-        self.fset = self._wrap(fset) if fset is not None else fset
-        self.fdel = self._wrap(fdel) if fdel is not None else fdel
+        self.fget = fget.__func__ if isinstance(fget, classmethod) else fget
+        self.fset = fset.__func__ if isinstance(fset, classmethod) else fset
+        self.fdel = fdel.__func__ if isinstance(fdel, classmethod) else fdel
 
         self.__doc__ = doc
         self.__name__ = self.fget.__name__
 
-    def _wrap(self, func: Callable[..., R1] | classmethod[T, P1, R1]) -> classmethod[T, P1, R1]:
-        if not isinstance(func, classmethod):
-            func = classmethod(func)
-
-        return func
-
     def __set_name__(self, owner: object, name: str) -> None:
         self.__name__ = name
 
-    def _get_cache(self, type_: type) -> dict[str, Any]:
+    def _get_cache(self, type_: type[T]) -> dict[str, Any]:
         cache_key = getattr(self, "cache_key")
 
         if not hasattr(type_, cache_key):
@@ -441,17 +439,19 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
 
         return getattr(type_, cache_key)
 
-    def __get__(self, obj: T | None, type_: type | None = None) -> R_co:
-        if type_ is None:
+    def __get__(self, obj: T | None, type_: type[T] | None = None) -> R_co:
+        if type_ is None and obj is not None:
             type_ = type(obj)
+        elif type_ is None:
+            raise NotImplementedError("Both obj and type_ are None")
 
         if not isinstance(self, classproperty.cached):
-            return self.fget.__get__(obj, type_)()
+            return self.fget(type_)
 
         if self.__name__ in (cache := self._get_cache(type_)):
             return cache[self.__name__]
 
-        value = self.fget.__get__(obj, type_)()
+        value = self.fget(type_)
         cache[self.__name__] = value
         return value
 
@@ -469,7 +469,7 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
         if self.__name__ in (cache := self._get_cache(type_)):
             del cache[self.__name__]
 
-        self.fset.__get__(None, type_)(value)
+        self.fset(type_, value)
 
     def __delete__(self, obj: T) -> None:
         if not self.fdel:
@@ -485,7 +485,7 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
         if self.__name__ in (cache := self._get_cache(type_)):
             del cache[self.__name__]
 
-        self.fdel.__get__(None, type_)()
+        self.fdel(type_)
 
 
 class classproperty(classproperty_base[T, R_co, _T_Any]):
