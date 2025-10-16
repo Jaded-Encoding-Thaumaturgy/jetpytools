@@ -401,14 +401,18 @@ def get_subclasses(family: type[T], exclude: Sequence[type[T]] = []) -> list[typ
     return list(set(_subclasses(family)))
 
 
-class classproperty_base(Generic[T, R_co]):
+_T_Any = TypeVar("_T_Any", default=Any)
+_T0_Any = TypeVar("_T0_Any", default=Any)
+
+
+class classproperty_base(Generic[T, R_co, _T_Any]):
     __isabstractmethod__: bool = False
 
     def __init__(
         self,
         fget: Callable[[type[T]], R_co] | classmethod[T, ..., R_co],
-        fset: Callable[Concatenate[type[T], Any, ...], None]
-        | classmethod[T, Concatenate[Any, ...], None]
+        fset: Callable[Concatenate[type[T], _T_Any, ...], None]
+        | classmethod[T, Concatenate[_T_Any, ...], None]
         | None = None,
         fdel: Callable[[type[T]], None] | classmethod[T, ..., None] | None = None,
         doc: str | None = None,
@@ -451,7 +455,7 @@ class classproperty_base(Generic[T, R_co]):
         cache[self.__name__] = value
         return value
 
-    def __set__(self, obj: T, value: Any) -> None:
+    def __set__(self, obj: T, value: _T_Any) -> None:
         if not self.fset:
             raise AttributeError(
                 f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no setter.'
@@ -484,12 +488,12 @@ class classproperty_base(Generic[T, R_co]):
         self.fdel.__get__(None, type_)()
 
 
-class classproperty(classproperty_base[T, R_co]):
+class classproperty(classproperty_base[T, R_co, _T_Any]):
     """
     A combination of `classmethod` and `property`.
     """
 
-    class cached(classproperty_base[T0, R0_co]):
+    class cached(classproperty_base[T0, R0_co, _T0_Any]):
         """
         A combination of `classmethod` and `property`.
 
@@ -522,10 +526,7 @@ class classproperty(classproperty_base[T, R_co]):
                     del cache[name]
 
 
-_T_cc = TypeVar("_T_cc", default=Any)
-
-
-class cachedproperty(property, Generic[R_co, _T_cc]):
+class cachedproperty(property, Generic[R_co, _T_Any]):
     """
     Wrapper for a one-time get property, that will be cached.
 
@@ -547,16 +548,16 @@ class cachedproperty(property, Generic[R_co, _T_cc]):
         def __init__(
             self,
             fget: Callable[[Any], R_co],
-            fset: Callable[[Any, _T_cc], None] | None = None,
+            fset: Callable[[Any, _T_Any], None] | None = None,
             fdel: Callable[[Any], None] | None = None,
             doc: str | None = None,
         ) -> None: ...
 
-        def getter(self, fget: Callable[..., R_co]) -> cachedproperty[R_co, _T_cc]: ...
+        def getter(self, fget: Callable[..., R_co]) -> cachedproperty[R_co, _T_Any]: ...
 
-        def setter(self, fset: Callable[[Any, _T_cc], None]) -> cachedproperty[R_co, _T_cc]: ...
+        def setter(self, fset: Callable[[Any, _T_Any], None]) -> cachedproperty[R_co, _T_Any]: ...
 
-        def deleter(self, fdel: Callable[..., None]) -> cachedproperty[R_co, _T_cc]: ...
+        def deleter(self, fdel: Callable[..., None]) -> cachedproperty[R_co, _T_Any]: ...
 
     if sys.version_info < (3, 13):
 
@@ -581,7 +582,7 @@ class cachedproperty(property, Generic[R_co, _T_cc]):
         cache[self.__name__] = value
         return value
 
-    def __set__(self, instance: Any, value: _T_cc) -> None:
+    def __set__(self, instance: Any, value: _T_Any) -> None:
         if self.__name__ in (cache := instance.__dict__.setdefault(self.cache_key, {})):
             del cache[self.__name__]
 
