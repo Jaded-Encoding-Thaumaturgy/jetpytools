@@ -56,16 +56,11 @@ def to_arr(val: T | Iterable[T]) -> list[T]: ...
 def to_arr(val: Any) -> list[Any]: ...
 
 
-def to_arr(val: Any, *, sub: Any = []) -> list[Any]:
+def to_arr(val: Any) -> list[Any]:
     """
     Normalize any value to a list.
     Bytes and str are not considered iterable and will not be flattened.
     """
-    if sub:
-        import warnings
-
-        warnings.warn("sub is deprecated.", DeprecationWarning)
-
     return list(val) if (isinstance(val, Iterable) and not isinstance(val, (str, bytes))) else [val]
 
 
