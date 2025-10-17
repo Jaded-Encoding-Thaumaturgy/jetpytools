@@ -97,13 +97,6 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
 
         super().__init__(message)
 
-    def __class_getitem__(cls, exception: str | type[ExceptionError] | ExceptionError) -> CustomError:
-        from warnings import warn
-
-        warn("Custom error is not subscriptable anymore. Don't use it", DeprecationWarning)
-
-        return cls()
-
     def __call__(
         self,
         message: SupportsString | None | MissingT = MISSING,
