@@ -4,7 +4,7 @@ import fnmatch
 import shutil
 from os import X_OK, PathLike, access, listdir, path, walk
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, TypeAlias
 
 from typing_extensions import Self
 
@@ -241,4 +241,4 @@ class SPath(Path):
         return access(self.to_str(), X_OK)
 
 
-SPathLike = Union[str, PathLike[str], Path, SPath]
+type SPathLike = str | PathLike[str]
