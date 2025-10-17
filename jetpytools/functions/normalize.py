@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from fractions import Fraction
-from typing import Any, Callable, Iterable, Iterator, Sequence, overload
+from typing import Any, Callable, Iterable, Iterator, Protocol, Sequence, overload, runtime_checkable
 
 from ..exceptions import CustomOverflowError
 from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, T, is_soft_range_n
@@ -254,6 +254,13 @@ def invert_ranges(
     return normalize_list_to_ranges({*range(lengtha)} - b_frames, exclusive=exclusive)
 
 
+@runtime_checkable
+class _HasSelfAttr(Protocol):
+    __self__: type | object
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any: ...
+
+
 def norm_func_name(func_name: SupportsString | Callable[..., Any]) -> str:
     """Normalize a class, function, or other object to obtain its name"""
 
@@ -270,7 +277,7 @@ def norm_func_name(func_name: SupportsString | Callable[..., Any]) -> str:
     elif hasattr(func_name, "__qualname__"):
         func_name = func.__qualname__
 
-    if callable(func) and hasattr(func, "__self__"):
+    if isinstance(func, _HasSelfAttr):
         func = func.__self__ if isinstance(func.__self__, type) else func.__self__.__class__
         func_name = f"{func.__name__}.{func_name}"
 
