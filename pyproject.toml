@@ -3,7 +3,7 @@ name = "jetpytools"
 dynamic = ["version"]
 description = "Collection of stuff that's useful in general python programming"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = "MIT"
 authors = [
     {name = "Jaded Encoding Thaumaturgy"}
@@ -21,7 +21,7 @@ classifiers = [
     "Typing :: Typed"
 ]
 dependencies = [
-    "typing_extensions>=4.12.2",
+    "typing_extensions>=4.15.0",
 ]
 
 [project.urls]
@@ -30,10 +30,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy>=1.17.0",
-    "ruff>=0.12.3",
+    "mypy>=1.18.0",
+    "ruff>=0.14.0",
     "pytest>=8.3.4, <9.0.0",
-    "twine>=6.1.0",
+    "twine>=6.2.0",
 ]
 
 [build-system]
