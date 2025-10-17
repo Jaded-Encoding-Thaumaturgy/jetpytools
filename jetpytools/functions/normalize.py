@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 from fractions import Fraction
 from typing import Any, Callable, Iterable, Iterator, Protocol, Sequence, overload, runtime_checkable
 
@@ -234,10 +233,7 @@ def normalize_ranges(
         out.append((start, end))
 
     if exceptions:
-        if sys.version_info >= (3, 11):
-            raise ExceptionGroup("Multiple exceptions occurred!", exceptions)  # noqa: F821
-
-        raise Exception(exceptions)
+        raise ExceptionGroup("Multiple exceptions occurred!", exceptions)
 
     return normalize_list_to_ranges(
         [x for start, end in out for x in range(start, end + (not exclusive))], exclusive=exclusive

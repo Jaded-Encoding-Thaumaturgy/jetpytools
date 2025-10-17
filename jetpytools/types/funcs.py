@@ -3,7 +3,7 @@ from __future__ import annotations
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, SupportsIndex, TypeAlias
 
-from typing_extensions import Self, TypeIs
+from typing_extensions import TypeIs
 
 from .builtins import P, T
 from .supports import SupportsString
@@ -59,14 +59,14 @@ class SentinelDispatcher:
 
         return _wrap
 
-    def filter(self, items: Iterable[T | Self]) -> Iterator[T]:
+    def filter(self, items: Iterable[T | SentinelDispatcher]) -> Iterator[T]:
         for item in items:
             if isinstance(item, SentinelDispatcher):
                 continue
             yield item
 
     @classmethod
-    def filter_multi(cls, items: Iterable[T | Self], *sentinels: Self) -> Iterator[T]:
+    def filter_multi(cls, items: Iterable[T | SentinelDispatcher], *sentinels: SentinelDispatcher) -> Iterator[T]:
         def _in_sentinels(it: Any) -> TypeIs[SentinelDispatcher]:
             return it in sentinels
 

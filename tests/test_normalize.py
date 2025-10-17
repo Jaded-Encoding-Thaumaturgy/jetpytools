@@ -1,23 +1,8 @@
 from __future__ import annotations
 
-import sys
-
 import pytest
 
 from jetpytools import CustomOverflowError, normalize_ranges
-
-if sys.version_info < (3, 11):
-    ExceptionGroup = Exception
-
-
-def assert_excinfo_group_contains(
-    excinfo: pytest.ExceptionInfo,  # type: ignore
-    exception: type[Exception],
-) -> None:
-    if sys.version_info < (3, 11):
-        assert isinstance(excinfo.value, Exception)
-    else:
-        assert excinfo.group_contains(exception)
 
 
 def test_normalize_ranges() -> None:
@@ -38,15 +23,15 @@ def test_normalize_ranges() -> None:
     # Overflow
     with pytest.raises(ExceptionGroup) as excinfo:
         normalize_ranges((500, 1500), length=1000)
-    assert_excinfo_group_contains(excinfo, CustomOverflowError)
+    assert excinfo.group_contains(CustomOverflowError)
 
     with pytest.raises(ExceptionGroup) as excinfo:
         normalize_ranges((-2000, 500), length=1000)
-    assert_excinfo_group_contains(excinfo, CustomOverflowError)
+    assert excinfo.group_contains(CustomOverflowError)
 
     with pytest.raises(ExceptionGroup) as excinfo:
         normalize_ranges((-2000, 2000), length=1000)
-    assert_excinfo_group_contains(excinfo, CustomOverflowError)
+    assert excinfo.group_contains(CustomOverflowError)
 
     assert normalize_ranges((500, 1500), length=1000, exclusive=False, strict=False) == [(500, 999)]
     assert normalize_ranges((500, 1500), length=1000, exclusive=True, strict=False) == [(500, 1000)]
@@ -61,4 +46,4 @@ def test_normalize_ranges() -> None:
 
     with pytest.raises(ExceptionGroup) as excinfo:
         normalize_ranges((0, 0), length=1000, exclusive=True, strict=True)
-    assert_excinfo_group_contains(excinfo, CustomOverflowError)
+    assert excinfo.group_contains(CustomOverflowError)

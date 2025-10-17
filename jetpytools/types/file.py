@@ -4,7 +4,6 @@ import fnmatch
 import shutil
 from os import X_OK, PathLike, access, listdir, path, walk
 from pathlib import Path
-from sys import version_info
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, TypeAlias, Union
 
 from typing_extensions import Self
@@ -104,9 +103,6 @@ OpenBinaryMode: TypeAlias = OpenBinaryModeUpdating | OpenBinaryModeReading | Ope
 
 class SPath(Path):
     """Modified version of pathlib.Path"""
-
-    if version_info < (3, 12):
-        _flavour = type(Path())._flavour  # type: ignore
 
     if TYPE_CHECKING:
 

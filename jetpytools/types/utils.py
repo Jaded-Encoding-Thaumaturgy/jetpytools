@@ -339,8 +339,8 @@ if TYPE_CHECKING:  # love you mypy...
     inject_kwargs_params = _inject_kwargs_params()
 else:
 
-    class inject_kwargs_params(Generic[T, P, R], inject_kwargs_params_base[T, P, R]):
-        class add_to_kwargs(Generic[T0, P0, R0], inject_kwargs_params_base[T0, P0, R0]): ...
+    class inject_kwargs_params(inject_kwargs_params_base[T, P, R], Generic[T, P, R]):
+        class add_to_kwargs(inject_kwargs_params_base[T0, P0, R0], Generic[T0, P0, R0]): ...
 
 
 class complex_hash(Generic[T]):
