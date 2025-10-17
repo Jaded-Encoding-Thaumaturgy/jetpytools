@@ -24,7 +24,7 @@ from typing import (
 
 from typing_extensions import Self, TypeVar, deprecated
 
-from .builtins import F0, F1, P0, P1, R0, T0, KwargsT, P, R, R0_co, R1_co, R_co, T, T0_co, T1_co, T_co
+from .builtins import F0, F1, P0, R0, T0, KwargsT, P, R, R0_co, R_co, T, T_co
 
 __all__ = [
     "KwargsNotNone",
@@ -75,163 +75,272 @@ def copy_signature[F: Callable[..., Any]](target: F, /) -> Callable[[Callable[..
     return decorator
 
 
-class injected_self_func(Protocol[T_co, P, R_co]):
-    @overload
-    @staticmethod
-    def __call__(*args: P.args, **kwargs: P.kwargs) -> R_co: ...
-
-    @overload
-    @staticmethod
-    def __call__(self: T_co, *args: P.args, **kwargs: P.kwargs) -> R_co:  # type: ignore[misc]
-        ...
-
-    @overload
-    @staticmethod
-    def __call__(cls: type[T_co], *args: P.args, **kwargs: P.kwargs) -> R_co: ...
+type _InnerInjectSelfType = dict[_InjectSelfMeta, dict[_InjectSelfMeta, _InnerInjectSelfType]]
+_inject_self_cls: _InnerInjectSelfType = {}
 
 
-self_objects_cache = dict[Any, Any]()
+class _InjectSelfMeta(type):
+    """
+    Metaclass used to manage subclass relationships and type flattening for the `inject_self` hierarchy.
+    """
 
+    _subclasses: frozenset[_InjectSelfMeta]
+    """All descendant metaclasses of a given `inject_self` subclass."""
 
-class inject_self_base(Generic[T_co, P, R_co]):
-    cache: bool | None
-    signature: Signature | None
-    init_kwargs: list[str] | None
-    first_key: str | None
+    def __new__[MetaSelf: _InjectSelfMeta](
+        mcls: type[MetaSelf], name: str, bases: tuple[type, ...], namespace: dict[str, Any], /, **kwargs: Any
+    ) -> MetaSelf:
+        cls = super().__new__(mcls, name, bases, namespace, **kwargs)
 
-    def __init__(self, function: Callable[Concatenate[T_co, P], R_co], /, *, cache: bool = False) -> None:
+        clsd = _inject_self_cls.setdefault(cls, {})
+
+        for k, v in _inject_self_cls.items():
+            if k in namespace.values():
+                clsd[k] = v
+
+        cls._subclasses = frozenset(cls._flatten_cls())
+
+        return cls
+
+    def _flatten_cls(cls, d: _InnerInjectSelfType | None = None) -> Iterator[_InjectSelfMeta]:
         """
-        Wrap ``function`` to always have a self provided to it.
+        Recursively flatten and yield all nested inject_self metaclass relationships.
 
-        :param function:    Method to wrap.
-        :param cache:       Whether to cache the self object.
+        :param d:   Optional inner dictionary representing the hierarchy level.
+        :yield:     Each `_InjectSelfMeta` subclass found in the hierarchy.
+        """
+        if d is None:
+            d = _inject_self_cls[cls]
+
+        for k, v in d.items():
+            yield k
+            yield from cls._flatten_cls(v)
+
+    def __instancecheck__(cls, instance: Any) -> bool:
+        """Allow isinstance() checks to succeed for any flattened subclass."""
+        return any(type.__instancecheck__(t, instance) for t in cls._subclasses)
+
+    def __subclasscheck__(cls, subclass: type) -> bool:
+        """Allow issubclass() checks to succeed for any flattened subclass."""
+        return any(type.__subclasscheck__(t, subclass) for t in cls._subclasses)
+
+
+class _InjectedSelfFunc[T, **P, R](Protocol):
+    """
+    Protocol defining the callable interface for wrapped functions under `inject_self`.
+
+    This allows the injected function to be called in any of the following forms:
+    - As a normal function: `f(*args, **kwargs)`
+    - As a bound method: `f(self, *args, **kwargs)`
+    - As a class method: `f(cls, *args, **kwargs)`
+    """
+
+    @overload
+    @staticmethod
+    def __call__(*args: P.args, **kwargs: P.kwargs) -> R: ...
+
+    @overload
+    @staticmethod
+    def __call__(self: T, /, *args: P.args, **kwargs: P.kwargs) -> R: ...  # pyright: ignore[reportSelfClsParameterName]
+
+    @overload
+    @staticmethod
+    def __call__(cls: type[T], /, *args: P.args, **kwargs: P.kwargs) -> R: ...  # pyright: ignore[reportSelfClsParameterName]
+
+
+_self_objects_cache = dict[type[Any], Any]()
+
+SelfInjectT = TypeVar("SelfInjectT", bound="_InjectSelfBase[Any, ..., Any]")
+
+
+class _InjectSelfBase[T, **P, R]:
+    """
+    Base descriptor implementation for `inject_self`.
+    """
+
+    __isabstractmethod__ = False
+    __slots__ = ("_function", "_init_signature", "_signature", "args", "kwargs")
+
+    _signature: Signature | None
+    _init_signature: Signature | None
+
+    def __init__(self, function: Callable[Concatenate[T, P], R], /, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the inject_self descriptor.
+
+        :param function:    The function or method to wrap.
+        :param *args:       Positional arguments to pass when instantiating the target class.
+        :param **kwargs:    Keyword arguments to pass when instantiating the target class.
+        """
+        self._function = function
+
+        self._signature = self._init_signature = None
+
+        self.args = args
+        self.kwargs = kwargs
+
+    def __get__(self, instance: T | None, owner: type[T]) -> _InjectedSelfFunc[T, P, R]:
+        """
+        Return a wrapped callable that automatically injects an instance as the first argument when called.
         """
 
-        self.cache = self.init_kwargs = None
+        @wraps(self._function)
+        def _wrapper(*args: Any, **kwargs: Any) -> R:
+            """
+            Call wrapper that performs the actual injection of `self`.
+            """
 
-        if isinstance(self, inject_self.cached):
-            self.cache = True
-
-        self.function = function
-
-        self.signature = self.first_key = self.init_kwargs = None
-
-        self.args = tuple[Any]()
-        self.kwargs = dict[str, Any]()
-
-        self.clean_kwargs = False
-
-    def __get__(
-        self,
-        class_obj: type[T] | T | None,
-        class_type: type[T | type[T]] | Any,  # type: ignore[valid-type]
-    ) -> injected_self_func[T_co, P, R_co]:
-        if not self.signature or not self.first_key:
-            self.signature = Signature.from_callable(self.function, eval_str=True)
-            self.first_key = next(iter(list(self.signature.parameters.keys())), None)
-
-            if isinstance(self, inject_self.init_kwargs):
-                from ..exceptions import CustomValueError
-
-                if 4 not in {x.kind for x in self.signature.parameters.values()}:
-                    raise CustomValueError(
-                        "This function hasn't got any kwargs!", "inject_self.init_kwargs", self.function
-                    )
-
-                self.init_kwargs = list[str](k for k, x in self.signature.parameters.items() if x.kind != 4)
-
-        @wraps(self.function)
-        def _wrapper(*args: Any, **kwargs: Any) -> Any:
-            first_arg = (args[0] if args else None) or (kwargs.get(self.first_key, None) if self.first_key else None)
-
-            if first_arg and (
-                (is_obj := isinstance(first_arg, class_type))
-                or isinstance(first_arg, type(class_type))
-                or first_arg is class_type
-            ):
-                obj = first_arg if is_obj else first_arg()
-                if args:
-                    args = args[1:]
-                elif kwargs and self.first_key:
-                    kwargs.pop(self.first_key)
-            elif class_obj is None:
-                if self.cache:
-                    if class_type not in self_objects_cache:
-                        obj = self_objects_cache[class_type] = class_type(*self.args, **self.kwargs)
-                    else:
-                        obj = self_objects_cache[class_type]
-                elif self.init_kwargs:
-                    obj = class_type(
-                        *self.args, **(self.kwargs | {k: v for k, v in kwargs.items() if k not in self.init_kwargs})
-                    )
-                    if self.clean_kwargs:
-                        kwargs = {k: v for k, v in kwargs.items() if k in self.init_kwargs}
-                else:
-                    obj = class_type(*self.args, **self.kwargs)
+            if args and isinstance((first_arg := args[0]), (owner, type(owner))):
+                # Instance or class explicitly provided as first argument
+                obj = first_arg if isinstance(first_arg, owner) else first_arg()  # type: ignore[operator]
+                args = args[1:]
+            elif instance is None:
+                # Accessed via class
+                obj, kwargs = self._handle_class_access(owner, kwargs)
             else:
-                obj = class_obj
+                # Accessed via instance
+                obj = instance
 
-            return self.function(obj, *args, **kwargs)  # type: ignore
+            return self._function(obj, *args, **kwargs)
 
         return _wrapper
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R_co:
-        return self.__get__(None, self)(*args, **kwargs)
+    def _handle_class_access(self, owner: type[T], kwargs: dict[str, Any]) -> tuple[T, dict[str, Any]]:
+        """
+        Handle logic when the descriptor is accessed from the class level.
+
+        :param owner:   The class object owning the descriptor.
+        :param kwargs:  Keyword arguments passed to the wrapped function.
+        :return:        A tuple of `(self_object, updated_kwargs)`.
+        """
+        if isinstance(self, inject_self.cached):
+            # Cached instance creation
+            try:
+                return _self_objects_cache[owner], kwargs
+            except KeyError:
+                return _self_objects_cache.setdefault(owner, owner()), kwargs
+
+        if isinstance(self, (inject_self.init_kwargs, inject_self.init_kwargs.clean)):
+            # Constructor accepts forwarded kwargs
+            has_kwargs = any(
+                param.kind in (param.VAR_KEYWORD, param.KEYWORD_ONLY)
+                for param in self.__signature__.parameters.values()
+            )
+
+            if not has_kwargs:
+                from ..exceptions import CustomValueError
+
+                raise CustomValueError(
+                    f"Function {self._function.__name__} doesn't accept keyword arguments.",
+                    "inject_self.init_kwargs",
+                    self._function,
+                )
+
+            if not self._init_signature:
+                self._init_signature = Signature.from_callable(owner)
+
+            init_kwargs = self.kwargs | {k: kwargs[k] for k in kwargs.keys() & self._init_signature.parameters.keys()}
+
+            obj = owner(*self.args, **init_kwargs)
+
+            if isinstance(self, inject_self.init_kwargs.clean):
+                # Clean up forwarded kwargs
+                kwargs = {k: v for k, v in kwargs.items() if k not in self._init_signature.parameters}
+
+            return obj, kwargs
+
+        return owner(*self.args, **self.kwargs), kwargs
+
+    @property
+    def __func__(self) -> Callable[Concatenate[T, P], R]:
+        """Return the original wrapped function."""
+        return self._function
 
     @property
     def __signature__(self) -> Signature:
-        return Signature.from_callable(self.function)
+        """Return (and cache) the signature of the wrapped function."""
+        if not self._signature:
+            self._signature = Signature.from_callable(self._function)
+        return self._signature
 
     @classmethod
-    def with_args(
+    def with_args[T0, **P0, R0](
         cls, *args: Any, **kwargs: Any
-    ) -> Callable[[Callable[Concatenate[T0_co, P0], R0_co]], inject_self[T0_co, P0, R0_co]]:
-        """Provide custom args to instantiate the ``self`` object with."""
+    ) -> Callable[[Callable[Concatenate[T0, P0], R0]], inject_self[T0, P0, R0]]:
+        """
+        Decorator factory to construct an `inject_self` or subclass (`cached`, `init_kwargs`, etc.)
+        with specific instantiation arguments.
+        """
 
+        # TODO: The precise subclass type cannot be expressed yet when the class is itself generic.
         def _wrapper(function: Callable[Concatenate[T0, P0], R0]) -> inject_self[T0, P0, R0]:
-            inj = cls(function)  # type: ignore
-            inj.args = args
-            inj.kwargs = kwargs
-            return inj  # type: ignore
+            return cls(function, *args, **kwargs)  # type: ignore[return-value, arg-type]
 
         return _wrapper
 
 
-class inject_self(inject_self_base[T_co, P, R_co]):
-    """Wrap a method so it always has a constructed ``self`` provided to it."""
+class inject_self[T, **P, R](_InjectSelfBase[T, P, R], metaclass=_InjectSelfMeta):
+    """
+    Descriptor that ensures the wrapped function always has a constructed `self`.
 
-    class cached(inject_self_base[T0_co, P0, R0_co]):
+    When accessed via a class, it will automatically instantiate an object before calling the function.
+    When accessed via an instance, it simply binds.
+
+    Subclasses such as `cached`, `init_kwargs`, and `init_kwargs.clean`
+    define variations in how the injected object is created or reused.
+    """
+
+    __slots__ = ()
+
+    class cached[T0, **P0, R0](_InjectSelfBase[T0, P0, R0], metaclass=_InjectSelfMeta):
         """
-        Wrap a method so it always has a constructed ``self`` provided to it.
-        Once ``self`` is constructed, it will be reused.
+        Variant of `inject_self` that caches the constructed instance.
+
+        The first time the method is accessed via the class, a `self` object is created and stored.
+        Subsequent calls reuse it.
         """
 
-        class property(Generic[T1_co, R1_co]):
-            def __init__(self, function: Callable[[T1_co], R1_co]) -> None:
-                self.function = inject_self(function)
+        __slots__ = ()
 
-            def __get__(self, class_obj: type[T1_co] | T1_co | None, class_type: type[T1_co] | T1_co) -> R1_co:
-                return self.function.__get__(class_obj, class_type)()
+        class property[T1, R1](metaclass=_InjectSelfMeta):
+            """Property variant of `inject_self.cached` that auto-calls the wrapped method."""
 
-    class init_kwargs(inject_self_base[T0_co, P0, R0_co]):
+            __slots__ = ("__func__",)
+
+            def __init__(self, function: Callable[[T1], R1], /) -> None:
+                self.__func__ = inject_self.cached(function)
+
+            def __get__(self, instance: T1 | None, owner: type[T1]) -> R1:
+                """Return the result of calling the cached method without arguments."""
+                return self.__func__.__get__(instance, owner)()
+
+    class init_kwargs[T0, **P0, R0](_InjectSelfBase[T0, P0, R0], metaclass=_InjectSelfMeta):
         """
-        Wrap a method so it always has a constructed ``self`` provided to it.
-        When constructed, kwargs to the function will be passed to the constructor.
+        Variant of `inject_self` that forwards function keyword arguments to the class constructor
+        when instantiating `self`.
         """
 
-        @classmethod
-        def clean(cls, function: Callable[Concatenate[T1_co, P1], R1_co]) -> inject_self[T1_co, P1, R1_co]:
-            """Wrap a method, pass kwargs to the constructor and remove them from actual **kwargs."""
-            inj = cls(function)  # type: ignore
-            inj.clean_kwargs = True
-            return inj  # type: ignore
+        __slots__ = ()
 
-    class property(Generic[T0_co, R0_co]):
-        def __init__(self, function: Callable[[T0_co], R0_co]) -> None:
-            self.function = inject_self(function)
+        class clean[T1, **P1, R1](_InjectSelfBase[T1, P1, R1], metaclass=_InjectSelfMeta):
+            """
+            Variant of `inject_self.init_kwargs` that removes any forwarded kwargs from the final function call
+            after using them for construction.
+            """
 
-        def __get__(self, class_obj: type[T0_co] | T0_co | None, class_type: type[T0_co] | T0_co) -> R0_co:
-            return self.function.__get__(class_obj, class_type)()
+            __slots__ = ()
+
+    class property[T0, R0](metaclass=_InjectSelfMeta):
+        """Property variant of `inject_self` that auto-calls the wrapped method."""
+
+        __slots__ = ("__func__",)
+
+        def __init__(self, function: Callable[[T0], R0], /) -> None:
+            self.__func__ = inject_self(function)
+
+        def __get__(self, instance: T0 | None, owner: type[T0]) -> R0:
+            """Return the result of calling the injected method without arguments."""
+            return self.__func__.__get__(instance, owner)()
 
 
 class inject_kwargs_params_base_func(Generic[T_co, P, R_co]):
