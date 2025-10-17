@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from ..types import FuncExcept, SupportsString, T
+from ..types import FuncExcept, SupportsString
 from .base import CustomValueError
 
 __all__ = ["MismatchError", "MismatchRefError"]
@@ -36,7 +36,7 @@ class MismatchError(CustomValueError):
 
 
 class MismatchRefError(MismatchError):
-    def __init__(
+    def __init__[T](
         self, func: FuncExcept, base: T, ref: T, message: SupportsString = "All items must be equal!", **kwargs: Any
     ) -> None:
         super().__init__(func, [base, ref], message, **kwargs)

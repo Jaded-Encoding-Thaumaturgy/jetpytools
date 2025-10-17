@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from enum import Enum, auto
-from typing import Any, Callable, Literal, TypeAlias, Union
+from typing import Any, Callable, Literal
 
-from .builtins import F, SingleOrArr, SingleOrArrOpt
+from .builtins import SingleOrArr, SingleOrArrOpt
 from .supports import SupportsString
 
 __all__ = ["MISSING", "DataType", "FuncExcept", "FuncExceptT", "MissingT", "PassthroughC", "StrArr", "StrArrOpt"]
@@ -13,10 +13,10 @@ class _MissingType(Enum):
     MISSING = auto()
 
 
-MissingT: TypeAlias = Literal[_MissingType.MISSING]
+type MissingT = Literal[_MissingType.MISSING]
 MISSING = _MissingType.MISSING
 
-DataType = Union[str, bytes, bytearray, SupportsString]
+type DataType = str | bytes | bytearray | SupportsString
 
 FuncExcept = str | Callable[..., Any] | tuple[Callable[..., Any] | str, str]
 """
@@ -40,4 +40,4 @@ FuncExceptT = FuncExcept
 StrArr = SingleOrArr[SupportsString]
 StrArrOpt = SingleOrArrOpt[SupportsString]
 
-PassthroughC = Callable[[F], F]
+type PassthroughC[F: Callable[..., Any]] = Callable[[F], F]

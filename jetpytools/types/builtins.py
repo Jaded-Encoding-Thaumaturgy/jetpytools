@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, ParamSpec, Sequence, SupportsFloat, SupportsIndex, TypeAlias, TypeVar, Union
+from typing import Any, Callable, ParamSpec, Sequence, SupportsFloat, SupportsIndex, TypeVar
 
 __all__ = [
     "F0",
@@ -75,21 +75,21 @@ R1_co = TypeVar("R1_co", covariant=True)
 T_contra = TypeVar("T_contra", contravariant=True)
 R_contra = TypeVar("R_contra", contravariant=True)
 
-StrictRange: TypeAlias = tuple[int, int]
-SoftRange: TypeAlias = int | StrictRange | Sequence[int]
+type StrictRange = tuple[int, int]
+type SoftRange = int | StrictRange | Sequence[int]
 
-SoftRangeN: TypeAlias = int | tuple[int | None, int | None] | None
+type SoftRangeN = int | tuple[int | None, int | None] | None
 
-SoftRangesN: TypeAlias = Sequence[SoftRangeN]
+type SoftRangesN = Sequence[SoftRangeN]
 
-SingleOrArr = Union[T, list[T]]
-SingleOrSeq = Union[T, Sequence[T]]
-SingleOrArrOpt = Union[SingleOrArr[T], None]
-SingleOrSeqOpt = Union[SingleOrSeq[T], None]
+type SingleOrArr[T] = T | list[T]
+type SingleOrSeq[T] = T | Sequence[T]
+type SingleOrArrOpt[T] = SingleOrArr[T] | None
+type SingleOrSeqOpt[T] = SingleOrSeq[T] | None
 
-SimpleByteData: TypeAlias = str | bytes | bytearray
-SimpleByteDataArray = Union[SimpleByteData, Sequence[SimpleByteData]]
+type SimpleByteData = str | bytes | bytearray
+type SimpleByteDataArray = SimpleByteData | Sequence[SimpleByteData]
 
-ByteData: TypeAlias = SupportsFloat | SupportsIndex | SimpleByteData | memoryview
+type ByteData = SupportsFloat | SupportsIndex | SimpleByteData | memoryview
 
 KwargsT = dict[str, Any]

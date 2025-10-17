@@ -4,7 +4,7 @@ from fractions import Fraction
 from typing import Any, Callable, Iterable, Iterator, Protocol, Sequence, overload, runtime_checkable
 
 from ..exceptions import CustomOverflowError
-from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, T, is_soft_range_n
+from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, is_soft_range_n
 
 __all__ = [
     "flatten",
@@ -21,14 +21,14 @@ __all__ = [
 
 
 @overload
-def normalize_seq(val: T | Sequence[T], length: int) -> list[T]: ...
+def normalize_seq[T](val: T | Sequence[T], length: int) -> list[T]: ...
 
 
 @overload
 def normalize_seq(val: Any, length: int) -> list[Any]: ...
 
 
-def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
+def normalize_seq[T](val: T | Sequence[T], length: int) -> list[T]:
     """
     Normalize a sequence of values.
 
@@ -48,7 +48,7 @@ def normalize_seq(val: T | Sequence[T], length: int) -> list[T]:
 
 
 @overload
-def to_arr(val: T | Iterable[T]) -> list[T]: ...
+def to_arr[T](val: T | Iterable[T]) -> list[T]: ...
 
 
 @overload
@@ -64,7 +64,7 @@ def to_arr(val: Any) -> list[Any]:
 
 
 @overload
-def flatten(items: Iterable[Iterable[T]]) -> Iterator[T]: ...
+def flatten[T](items: Iterable[Iterable[T]]) -> Iterator[T]: ...
 
 
 @overload

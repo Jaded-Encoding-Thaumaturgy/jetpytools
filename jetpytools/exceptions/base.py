@@ -4,7 +4,7 @@ import sys
 from contextlib import AbstractContextManager
 from copy import deepcopy
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any
 
 from typing_extensions import Self
 
@@ -35,11 +35,13 @@ else:
 class CustomErrorMeta(type):
     """Custom base exception meta class."""
 
-    def __new__(cls: type[SelfCErrorMeta], *args: Any) -> SelfCErrorMeta:
+    def __new__[MetaSelf: CustomErrorMeta](cls: type[MetaSelf], *args: Any) -> MetaSelf:
         return CustomErrorMeta.setup_exception(super().__new__(cls, *args))
 
     @staticmethod
-    def setup_exception(exception: SelfCErrorMeta, override: str | ExceptionError | None = None) -> SelfCErrorMeta:
+    def setup_exception[MetaSelf: CustomErrorMeta](
+        exception: MetaSelf, override: str | ExceptionError | None = None
+    ) -> MetaSelf:
         """
         Setup an exception for later use in CustomError.
 
@@ -71,9 +73,6 @@ class CustomErrorMeta(type):
         exception.__module__ = Exception.__module__
 
         return exception
-
-
-SelfCErrorMeta = TypeVar("SelfCErrorMeta", bound=CustomErrorMeta)
 
 
 class CustomError(ExceptionError, metaclass=CustomErrorMeta):
@@ -177,20 +176,17 @@ class CustomError(ExceptionError, metaclass=CustomErrorMeta):
         return CatchError(cls)
 
 
-SelfError = TypeVar("SelfError", bound=CustomError)
-
-
-class CatchError(AbstractContextManager["CatchError[SelfError]"], Generic[SelfError]):
+class CatchError[CustomErrorT: CustomError](AbstractContextManager["CatchError[CustomErrorT]"]):
     """
     Context manager for catching a specific exception type.
     """
 
-    error: SelfError | None
+    error: CustomErrorT | None
     """The caught exception instance, if any."""
     tb: TracebackType | None
     """The traceback object associated with the caught exception."""
 
-    def __init__(self, error: type[SelfError]) -> None:
+    def __init__(self, error: type[CustomErrorT]) -> None:
         self.error = None
         self.tb = None
         self._to_catch_error = error

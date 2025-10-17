@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ..exceptions import CustomValueError, NotFoundEnumValue
 from ..types import FuncExcept
@@ -68,10 +66,6 @@ class CustomEnum(Enum):
 class CustomIntEnum(int, CustomEnum):
     """Base class for custom int enums."""
 
-    value: int
-
 
 class CustomStrEnum(str, CustomEnum):
     """Base class for custom str enums."""
-
-    value: str

@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, SupportsInd
 
 from typing_extensions import TypeIs
 
-from .builtins import P, T
 from .supports import SupportsString
 
 __all__ = ["Sentinel", "SentinelT", "StrList"]
@@ -49,24 +48,24 @@ class StrList(list[SupportsString]):
 
 
 class SentinelDispatcher:
-    def check(self, ret_value: T, cond: bool) -> T | SentinelDispatcher:
+    def check[T](self, ret_value: T, cond: bool) -> T | SentinelDispatcher:
         return ret_value if cond else self
 
-    def check_cb(self, callback: Callable[P, tuple[T, bool]]) -> Callable[P, T | SentinelDispatcher]:
+    def check_cb[T, **P](self, callback: Callable[P, tuple[T, bool]]) -> Callable[P, T | SentinelDispatcher]:
         @wraps(callback)
         def _wrap(*args: P.args, **kwargs: P.kwargs) -> T | SentinelDispatcher:
             return self.check(*callback(*args, **kwargs))
 
         return _wrap
 
-    def filter(self, items: Iterable[T | SentinelDispatcher]) -> Iterator[T]:
+    def filter[T](self, items: Iterable[T | SentinelDispatcher]) -> Iterator[T]:
         for item in items:
             if isinstance(item, SentinelDispatcher):
                 continue
             yield item
 
     @classmethod
-    def filter_multi(cls, items: Iterable[T | SentinelDispatcher], *sentinels: SentinelDispatcher) -> Iterator[T]:
+    def filter_multi[T](cls, items: Iterable[T | SentinelDispatcher], *sentinels: SentinelDispatcher) -> Iterator[T]:
         def _in_sentinels(it: Any) -> TypeIs[SentinelDispatcher]:
             return it in sentinels
 

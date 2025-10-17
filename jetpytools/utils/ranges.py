@@ -3,12 +3,10 @@ from __future__ import annotations
 from itertools import chain, zip_longest
 from typing import Iterable
 
-from ..types import T0, T
-
 __all__ = ["interleave_arr"]
 
 
-def interleave_arr(arr0: Iterable[T], arr1: Iterable[T0], n: int = 2) -> Iterable[T | T0]:
+def interleave_arr[T0, T1](arr0: Iterable[T0], arr1: Iterable[T1], n: int = 2) -> Iterable[T0 | T1]:
     """
     Interleave two arrays of variable length.
 

@@ -3,8 +3,6 @@ from __future__ import annotations
 from math import ceil, log, log10
 from typing import Sequence
 
-from ..types import Nb
-
 __all__ = [
     "clamp",
     "clamp_arr",
@@ -20,13 +18,13 @@ __all__ = [
 ]
 
 
-def clamp(val: Nb, min_val: Nb, max_val: Nb) -> Nb:
+def clamp[Nb: (int, float)](val: Nb, min_val: Nb, max_val: Nb) -> Nb:
     """Faster max(min(value, max_val), min_val) "wrapper" """
 
     return min_val if val < min_val else max_val if val > max_val else val
 
 
-def clamp_arr(vals: Sequence[Nb], min_val: Nb, max_val: Nb) -> list[Nb]:
+def clamp_arr[Nb: (int, float)](vals: Sequence[Nb], min_val: Nb, max_val: Nb) -> list[Nb]:
     """Map an array to clamp."""
 
     return [clamp(x, min_val, max_val) for x in vals]
@@ -163,7 +161,7 @@ def spline_coeff(
     return float(s)
 
 
-def ndigits(num: Nb) -> int:
+def ndigits(num: float) -> int:
     if num == 0:
         return 1
 

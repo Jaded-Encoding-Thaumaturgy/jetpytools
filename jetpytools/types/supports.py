@@ -1,20 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    Protocol,
-    SupportsFloat,
-    SupportsIndex,
-    TypeAlias,
-    TypeVar,
-    overload,
-    runtime_checkable,
-)
-
-from .builtins import T0, T1, T2, T_co, T_contra
+from typing import Any, Callable, Iterable, Protocol, SupportsFloat, SupportsIndex, TypeVar, overload, runtime_checkable
 
 __all__ = [
     "ComparatorFunc",
@@ -36,17 +23,13 @@ __all__ = [
 ]
 
 
-_KT = TypeVar("_KT")
-_VT_co = TypeVar("_VT_co", covariant=True)
-
-
 @runtime_checkable
-class SupportsAdd(Protocol[T_contra, T_co]):
+class SupportsAdd[T_contra, T_co](Protocol):
     def __add__(self, x: T_contra, /) -> T_co: ...
 
 
 @runtime_checkable
-class SupportsRAdd(Protocol[T_contra, T_co]):
+class SupportsRAdd[T_contra, T_co](Protocol):
     def __radd__(self, x: T_contra, /) -> T_co: ...
 
 
@@ -68,22 +51,22 @@ class SupportsString(Protocol):
 
 
 @runtime_checkable
-class SupportsDunderLT(Protocol[T_contra]):
+class SupportsDunderLT[T_contra](Protocol):
     def __lt__(self, other: T_contra) -> bool: ...
 
 
 @runtime_checkable
-class SupportsDunderGT(Protocol[T_contra]):
+class SupportsDunderGT[T_contra](Protocol):
     def __gt__(self, other: T_contra) -> bool: ...
 
 
 @runtime_checkable
-class SupportsDunderLE(Protocol[T_contra]):
+class SupportsDunderLE[T_contra](Protocol):
     def __le__(self, other: T_contra) -> bool: ...
 
 
 @runtime_checkable
-class SupportsDunderGE(Protocol[T_contra]):
+class SupportsDunderGE[T_contra](Protocol):
     def __ge__(self, other: T_contra) -> bool: ...
 
 
@@ -93,7 +76,7 @@ class SupportsAllComparisons(
 ): ...
 
 
-SupportsRichComparison: TypeAlias = SupportsDunderLT[Any] | SupportsDunderGT[Any]
+type SupportsRichComparison = SupportsDunderLT[Any] | SupportsDunderGT[Any]
 SupportsRichComparisonT = TypeVar("SupportsRichComparisonT", bound=SupportsRichComparison)
 
 
@@ -109,7 +92,7 @@ class ComparatorFunc(Protocol):
     ) -> SupportsRichComparisonT: ...
 
     @overload
-    def __call__(self, arg1: T0, arg2: T0, /, *_args: T0, key: Callable[[T0], SupportsRichComparison]) -> T0: ...
+    def __call__[T](self, arg1: T, arg2: T, /, *_args: T, key: Callable[[T], SupportsRichComparison]) -> T: ...
 
     @overload
     def __call__(
@@ -117,27 +100,27 @@ class ComparatorFunc(Protocol):
     ) -> SupportsRichComparisonT: ...
 
     @overload
-    def __call__(self, iterable: Iterable[T0], /, *, key: Callable[[T0], SupportsRichComparison]) -> T0: ...
+    def __call__[T](self, iterable: Iterable[T], /, *, key: Callable[[T], SupportsRichComparison]) -> T: ...
 
     @overload
-    def __call__(
-        self, iterable: Iterable[SupportsRichComparisonT], /, *, key: None = ..., default: T0
-    ) -> SupportsRichComparisonT | T0: ...
+    def __call__[T, SupportsRichComparisonT: SupportsRichComparison](
+        self, iterable: Iterable[SupportsRichComparisonT], /, *, key: None = ..., default: T
+    ) -> SupportsRichComparisonT | T: ...
 
     @overload
-    def __call__(
-        self, iterable: Iterable[T1], /, *, key: Callable[[T1], SupportsRichComparison], default: T2
-    ) -> T1 | T2: ...
+    def __call__[T0, T1](
+        self, iterable: Iterable[T0], /, *, key: Callable[[T0], SupportsRichComparison], default: T1
+    ) -> T0 | T1: ...
 
 
-class SupportsIndexing(Protocol[_VT_co]):
-    def __getitem__(self, k: int) -> _VT_co: ...
+class SupportsIndexing[T](Protocol):
+    def __getitem__(self, k: int) -> T: ...
 
 
-class SupportsKeysAndGetItem(Protocol[_KT, _VT_co]):
-    def keys(self) -> Iterable[_KT]: ...
+class SupportsKeysAndGetItem[KT, VT](Protocol):
+    def keys(self) -> Iterable[KT]: ...
 
-    def __getitem__(self, k: _KT) -> _VT_co: ...
+    def __getitem__(self, k: KT) -> VT: ...
 
 
-SupportsFloatOrIndex: TypeAlias = SupportsFloat | SupportsIndex
+type SupportsFloatOrIndex = SupportsFloat | SupportsIndex

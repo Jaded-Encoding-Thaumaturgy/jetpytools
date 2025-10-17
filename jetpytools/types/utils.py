@@ -11,7 +11,6 @@ from typing import (
     Callable,
     ClassVar,
     Concatenate,
-    Generator,
     Generic,
     Iterable,
     Iterator,
@@ -42,7 +41,7 @@ __all__ = [
 # ruff: noqa: N801
 
 
-def copy_signature(target: F0, /) -> Callable[[Callable[..., Any]], F0]:
+def copy_signature[F: Callable[..., Any]](target: F, /) -> Callable[[Callable[..., Any]], F]:
     """
     Utility function to copy the signature of one function to another one.
 
@@ -70,8 +69,8 @@ def copy_signature(target: F0, /) -> Callable[[Callable[..., Any]], F0]:
                # another thing
     """
 
-    def decorator(wrapped: Callable[..., Any]) -> F0:
-        return cast(F0, wrapped)
+    def decorator(wrapped: Callable[..., Any]) -> F:
+        return cast(F, wrapped)
 
     return decorator
 
@@ -391,7 +390,7 @@ def complex_hash[T](cls: type[T]) -> type[T]:
     return type(cls.__name__, (cls,), ns)  # pyright: ignore[reportReturnType]
 
 
-def get_subclasses(family: type[T], exclude: Sequence[type[T]] = []) -> list[type[T]]:
+def get_subclasses[T](family: type[T], exclude: Sequence[type[T]] = []) -> list[type[T]]:
     """
     Get all subclasses of a given type.
 
@@ -402,7 +401,7 @@ def get_subclasses(family: type[T], exclude: Sequence[type[T]] = []) -> list[typ
     :return:        List of all subclasses of "family".
     """
 
-    def _subclasses(cls: type[T]) -> Generator[type[T], None, None]:
+    def _subclasses(cls: type[T]) -> Iterator[type[T]]:
         for subclass in cls.__subclasses__():
             yield from _subclasses(subclass)
             if subclass in exclude:
@@ -412,24 +411,26 @@ def get_subclasses(family: type[T], exclude: Sequence[type[T]] = []) -> list[typ
     return list(set(_subclasses(family)))
 
 
+_T = TypeVar("_T")
+_T0 = TypeVar("_T0")
 _T_Any = TypeVar("_T_Any", default=Any)
 _T0_Any = TypeVar("_T0_Any", default=Any)
 
 
-class classproperty_base(Generic[T, R_co, _T_Any]):
+class classproperty_base(Generic[_T, R_co, _T_Any]):
     __isabstractmethod__: bool = False
 
-    fget: Callable[[type[T]], R_co]
-    fset: Callable[Concatenate[type[T], _T_Any, ...], None] | None
-    fdel: Callable[[type[T]], None] | None
+    fget: Callable[[type[_T]], R_co]
+    fset: Callable[Concatenate[type[_T], _T_Any, ...], None] | None
+    fdel: Callable[[type[_T]], None] | None
 
     def __init__(
         self,
-        fget: Callable[[type[T]], R_co] | classmethod[T, ..., R_co],
-        fset: Callable[Concatenate[type[T], _T_Any, ...], None]
-        | classmethod[T, Concatenate[_T_Any, ...], None]
+        fget: Callable[[type[_T]], R_co] | classmethod[_T, ..., R_co],
+        fset: Callable[Concatenate[type[_T], _T_Any, ...], None]
+        | classmethod[_T, Concatenate[_T_Any, ...], None]
         | None = None,
-        fdel: Callable[[type[T]], None] | classmethod[T, ..., None] | None = None,
+        fdel: Callable[[type[_T]], None] | classmethod[_T, ..., None] | None = None,
         doc: str | None = None,
     ) -> None:
         self.fget = fget.__func__ if isinstance(fget, classmethod) else fget
@@ -442,7 +443,7 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
     def __set_name__(self, owner: object, name: str) -> None:
         self.__name__ = name
 
-    def _get_cache(self, type_: type[T]) -> dict[str, Any]:
+    def _get_cache(self, type_: type[_T]) -> dict[str, Any]:
         cache_key = getattr(self, "cache_key")
 
         if not hasattr(type_, cache_key):
@@ -450,7 +451,7 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
 
         return getattr(type_, cache_key)
 
-    def __get__(self, obj: T | None, type_: type[T] | None = None) -> R_co:
+    def __get__(self, obj: _T | None, type_: type[_T] | None = None) -> R_co:
         if type_ is None and obj is not None:
             type_ = type(obj)
         elif type_ is None:
@@ -466,7 +467,7 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
         cache[self.__name__] = value
         return value
 
-    def __set__(self, obj: T, value: _T_Any) -> None:
+    def __set__(self, obj: _T, value: _T_Any) -> None:
         if not self.fset:
             raise AttributeError(
                 f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no setter.'
@@ -482,7 +483,7 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
 
         self.fset(type_, value)
 
-    def __delete__(self, obj: T) -> None:
+    def __delete__(self, obj: _T) -> None:
         if not self.fdel:
             raise AttributeError(
                 f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no deleter.'
@@ -499,12 +500,12 @@ class classproperty_base(Generic[T, R_co, _T_Any]):
         self.fdel(type_)
 
 
-class classproperty(classproperty_base[T, R_co, _T_Any]):
+class classproperty(classproperty_base[_T, R_co, _T_Any]):
     """
     A combination of `classmethod` and `property`.
     """
 
-    class cached(classproperty_base[T0, R0_co, _T0_Any]):
+    class cached(classproperty_base[_T0, R0_co, _T0_Any]):
         """
         A combination of `classmethod` and `property`.
 
@@ -640,18 +641,20 @@ class cachedproperty(property, Generic[R_co, _T_Any]):
 class KwargsNotNone(KwargsT):
     """Remove all None objects from this kwargs dict."""
 
-    if not TYPE_CHECKING:
-
-        def __new__(cls, *args: Any, **kwargs: Any) -> Self:
-            return KwargsT(**{key: value for key, value in KwargsT(*args, **kwargs).items() if value is not None})
+    @copy_signature(KwargsT.__init__)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__({key: value for key, value in dict(*args, **kwargs).items() if value is not None})
 
 
 class SingletonMeta(type):
     _instances: ClassVar[dict[type[Any], Any]] = {}
     _singleton_init: bool
 
-    def __new__(cls, name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any) -> SingletonMeta:
-        return type.__new__(cls, name, bases, namespace | {"_singleton_init": kwargs.pop("init", False)})
+    def __new__[MetaSelf: SingletonMeta](
+        mcls: type[MetaSelf], name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any
+    ) -> MetaSelf:
+        namespace["_singleton_init"] = kwargs.pop("init", False)
+        return super().__new__(mcls, name, bases, namespace, **kwargs)
 
     def __call__(cls, *args: Any, **kwargs: Any) -> SingletonMeta:
         if cls not in cls._instances:
@@ -664,6 +667,8 @@ class SingletonMeta(type):
 
 class Singleton(metaclass=SingletonMeta):
     """Handy class to inherit to have the SingletonMeta metaclass."""
+
+    __slots__ = ()
 
 
 class LinearRangeLut(Mapping[int, int]):
@@ -688,13 +693,14 @@ class LinearRangeLut(Mapping[int, int]):
             if self._misses_n > 2:
                 self._ranges_idx_lut = self._ranges_idx_lut[missed_hit:] + self._ranges_idx_lut[:missed_hit]
 
-        return idx
+        return idx  # pyright: ignore[reportPossiblyUnboundVariable]
 
     def __len__(self) -> int:
         return len(self.ranges)
 
     def __iter__(self) -> Iterator[int]:
-        return iter(range(len(self)))
+        for i in range(len(self)):
+            yield i
 
     def __setitem__(self, n: int, _range: range) -> NoReturn:
         raise NotImplementedError

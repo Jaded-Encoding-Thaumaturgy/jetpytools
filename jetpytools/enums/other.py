@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import overload
-
-from typing_extensions import Self
+from typing import Self, overload
 
 __all__ = ["Coordinate", "Position", "Size"]
 
@@ -27,17 +25,19 @@ class Coordinate:
     def __init__(self, x: int, y: int, /) -> None: ...
 
     def __init__(self, x_or_self: int | tuple[int, int] | Self, y: int | None = None, /) -> None:
-        from ..exceptions import CustomValueError
-
         if isinstance(x_or_self, int):
             x = x_or_self
         else:
             x, y = x_or_self if isinstance(x_or_self, tuple) else (x_or_self.x, x_or_self.y)
 
         if y is None:
+            from ..exceptions import CustomValueError
+
             raise CustomValueError("y coordinate must be defined!", self.__class__)
 
         if x < 0 or y < 0:
+            from ..exceptions import CustomValueError
+
             raise CustomValueError("Values can't be negative!", self.__class__)
 
         self.x = x
