@@ -25,7 +25,7 @@ from typing import (
 
 from typing_extensions import TypeVar, deprecated
 
-from .builtins import KwargsT, R0_co, R_co
+from .builtins import KwargsT
 
 __all__ = [
     "KwargsNotNone",
@@ -558,16 +558,16 @@ def get_subclasses[T](family: type[T], exclude: Sequence[type[T]] = []) -> list[
     return list(set(_subclasses(family)))
 
 
-class classproperty_base(Generic[_T, R_co, _T_Any]):
+class classproperty_base(Generic[_T, _R_co, _T_Any]):
     __isabstractmethod__: bool = False
 
-    fget: Callable[[type[_T]], R_co]
+    fget: Callable[[type[_T]], _R_co]
     fset: Callable[Concatenate[type[_T], _T_Any, ...], None] | None
     fdel: Callable[[type[_T]], None] | None
 
     def __init__(
         self,
-        fget: Callable[[type[_T]], R_co] | classmethod[_T, ..., R_co],
+        fget: Callable[[type[_T]], _R_co] | classmethod[_T, ..., _R_co],
         fset: Callable[Concatenate[type[_T], _T_Any, ...], None]
         | classmethod[_T, Concatenate[_T_Any, ...], None]
         | None = None,
@@ -592,7 +592,7 @@ class classproperty_base(Generic[_T, R_co, _T_Any]):
 
         return getattr(type_, cache_key)
 
-    def __get__(self, obj: _T | None, type_: type[_T] | None = None) -> R_co:
+    def __get__(self, obj: _T | None, type_: type[_T] | None = None) -> _R_co:
         if type_ is None and obj is not None:
             type_ = type(obj)
         elif type_ is None:
@@ -641,12 +641,12 @@ class classproperty_base(Generic[_T, R_co, _T_Any]):
         self.fdel(type_)
 
 
-class classproperty(classproperty_base[_T, R_co, _T_Any]):
+class classproperty(classproperty_base[_T, _R_co, _T_Any]):
     """
     A combination of `classmethod` and `property`.
     """
 
-    class cached(classproperty_base[_T0, R0_co, _T0_Any]):
+    class cached(classproperty_base[_T0, _R0_co, _T0_Any]):
         """
         A combination of `classmethod` and `property`.
 
@@ -679,7 +679,7 @@ class classproperty(classproperty_base[_T, R_co, _T_Any]):
                     del cache[name]
 
 
-class cachedproperty(property, Generic[R_co, _T_Any]):
+class cachedproperty(property, Generic[_R_co, _T_Any]):
     """
     Wrapper for a one-time get property, that will be cached.
 
@@ -700,17 +700,17 @@ class cachedproperty(property, Generic[R_co, _T_Any]):
 
         def __init__(
             self,
-            fget: Callable[[Any], R_co],
+            fget: Callable[[Any], _R_co],
             fset: Callable[[Any, _T_Any], None] | None = None,
             fdel: Callable[[Any], None] | None = None,
             doc: str | None = None,
         ) -> None: ...
 
-        def getter(self, fget: Callable[..., R_co]) -> cachedproperty[R_co, _T_Any]: ...
+        def getter(self, fget: Callable[..., _R_co]) -> cachedproperty[_R_co, _T_Any]: ...
 
-        def setter(self, fset: Callable[[Any, _T_Any], None]) -> cachedproperty[R_co, _T_Any]: ...
+        def setter(self, fset: Callable[[Any, _T_Any], None]) -> cachedproperty[_R_co, _T_Any]: ...
 
-        def deleter(self, fdel: Callable[..., None]) -> cachedproperty[R_co, _T_Any]: ...
+        def deleter(self, fdel: Callable[..., None]) -> cachedproperty[_R_co, _T_Any]: ...
 
     if sys.version_info < (3, 13):
 
@@ -722,7 +722,7 @@ class cachedproperty(property, Generic[R_co, _T_Any]):
     def __get__(self, instance: None, owner: type | None = None) -> Self: ...
 
     @overload
-    def __get__(self, instance: Any, owner: type | None = None) -> R_co: ...
+    def __get__(self, instance: Any, owner: type | None = None) -> _R_co: ...
 
     def __get__(self, instance: Any, owner: type | None = None) -> Any:
         if instance is None:
