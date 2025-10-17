@@ -38,7 +38,6 @@ __all__ = [
     "get_subclasses",
     "inject_kwargs_params",
     "inject_self",
-    "to_singleton",
 ]
 # ruff: noqa: N801
 
@@ -653,35 +652,6 @@ class SingletonMeta(type):
 
 class Singleton(metaclass=SingletonMeta):
     """Handy class to inherit to have the SingletonMeta metaclass."""
-
-
-class to_singleton_impl:
-    _ts_args = tuple[str, ...]()
-    _ts_kwargs: Mapping[str, Any] = {}
-    _add_classes = tuple[type, ...]()
-
-    def __new__(_cls, cls: type[T]) -> T:  # type: ignore
-        if _cls._add_classes:
-
-            class rcls(cls, *_cls._add_classes):  # type: ignore
-                ...
-        else:
-            rcls = cls  # type: ignore
-
-        return rcls(*_cls._ts_args, **_cls._ts_kwargs)
-
-    @classmethod
-    def with_args(cls, *args: Any, **kwargs: Any) -> type[to_singleton]:
-        class _inner_singl(cls):  # type: ignore
-            _ts_args = args
-            _ts_kwargs = kwargs
-
-        return _inner_singl
-
-
-class to_singleton(to_singleton_impl):
-    class as_property(to_singleton_impl):
-        _add_classes = (property,)
 
 
 class LinearRangeLut(Mapping[int, int]):
