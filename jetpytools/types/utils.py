@@ -343,19 +343,14 @@ else:
         class add_to_kwargs(inject_kwargs_params_base[T0, P0, R0], Generic[T0, P0, R0]): ...
 
 
-class complex_hash(Generic[T]):
-    """
-    Decorator for classes to add a ``__hash__`` method to them.
+class _ComplexHash[**P, R]:
+    __slots__ = "func"
 
-    Especially useful for NamedTuples.
-    """
+    def __init__(self, func: Callable[P, R]) -> None:
+        self.func = func
 
-    def __new__(cls, class_type: T) -> T:  # type: ignore
-        class inner_class_type(class_type):  # type: ignore
-            def __hash__(self) -> int:
-                return complex_hash.hash(self.__class__.__name__, *(getattr(self, key) for key in self.__annotations__))
-
-        return inner_class_type  # type: ignore
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+        return self.func(*args, **kwargs)
 
     @staticmethod
     def hash(*args: Any) -> int:
@@ -377,6 +372,23 @@ class complex_hash(Generic[T]):
             values.append(str(new_hash))
 
         return hash("_".join(values))
+
+
+@_ComplexHash
+def complex_hash[T](cls: type[T]) -> type[T]:
+    """
+    Decorator for classes to add a ``__hash__`` method to them.
+
+    Especially useful for NamedTuples.
+    """
+
+    def __hash__(self: T) -> int:  # noqa: N807
+        return complex_hash.hash(self.__class__.__name__, *(getattr(self, key) for key in self.__annotations__))
+
+    ns = cls.__dict__.copy()
+    ns["__hash__"] = __hash__
+
+    return type(cls.__name__, (cls,), ns)  # pyright: ignore[reportReturnType]
 
 
 def get_subclasses(family: type[T], exclude: Sequence[type[T]] = []) -> list[type[T]]:
