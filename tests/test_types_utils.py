@@ -1,7 +1,9 @@
 from inspect import Signature
 from typing import Any
 
-from jetpytools import inject_self
+import pytest
+
+from jetpytools import inject_kwargs_params, inject_self
 from jetpytools.types.utils import _self_objects_cache
 
 
@@ -141,3 +143,93 @@ def test_signature_caching_and_func_property() -> None:
     assert "x" in sig.parameters
 
     assert callable(wrapped.__func__)
+
+
+def test_inject_kwargs_basic_injection() -> None:
+    class A:
+        def __init__(self) -> None:
+            self.kwargs = {"x": 5, "y": 10, "extra": 99}
+
+        @inject_kwargs_params
+        def func(self, x: int = 0, y: int = 0) -> int:
+            return x + y
+
+    a = A()
+    # Should inject x=5, y=10
+    assert a.func() == 15
+
+
+def test_inject_kwargs_empty_mapping() -> None:
+    class B:
+        kwargs: dict[str, Any]
+
+        def __init__(self) -> None:
+            self.kwargs = {}
+
+        @inject_kwargs_params
+        def func(self, x: int = 1, y: int = 2) -> int:
+            return x + y
+
+    b = B()
+    # No injection, defaults used
+    assert b.func() == 3
+
+
+def test_inject_kwargs_with_name_factory() -> None:
+    class C:
+        def __init__(self) -> None:
+            self.config = {"val": 42}
+
+        @inject_kwargs_params.with_name("config")
+        def show(self, val: int = 0) -> int:
+            return val
+
+    c = C()
+    assert c.show() == 42
+
+
+def test_inject_kwargs_add_to_kwargs_merges_leftovers() -> None:
+    class D:
+        def __init__(self) -> None:
+            self.kwargs = {"x": 3, "y": 4, "extra": 50}
+
+        @inject_kwargs_params.add_to_kwargs
+        def func(self, x: int = 0, y: int = 0, **kwargs: Any) -> tuple[Any, ...]:
+            return x, y, kwargs
+
+    d = D()
+    x, y, extra_kwargs = d.func()
+    assert x == 3
+    assert y == 4
+    # Unused key "extra" should be merged into kwargs
+    assert extra_kwargs == {"extra": 50}
+
+
+def test_inject_kwargs_missing_attribute() -> None:
+    class E:
+        @inject_kwargs_params
+        def f(self) -> None: ...
+
+    e = E()
+
+    # Should fail since E has no 'kwargs'
+    with pytest.raises(Exception) as excinfo:
+        E.f.__get__(e, E)
+
+    assert "Missing attribute" in str(excinfo.value)
+
+
+def test_inject_kwargs_signature_and_func_property() -> None:
+    class F:
+        @inject_kwargs_params
+        def f(self, a: Any, b: int = 1) -> None: ...
+
+    desc = F.__dict__["f"]
+
+    sig = desc.__signature__
+    assert isinstance(sig, Signature)
+    assert "a" in sig.parameters
+
+    # Ensure __func__ returns original callable
+    assert callable(desc.__func__)
+    assert desc.__func__ is F.__dict__["f"]._function
