@@ -590,61 +590,56 @@ class classproperty_base(Generic[_T, _R_co, _T_Any]):
     def __set_name__(self, owner: object, name: str) -> None:
         self.__name__ = name
 
-    def _get_cache(self, type_: type[_T]) -> dict[str, Any]:
+    def _get_cache(self, owner: type[_T]) -> dict[str, Any]:
         cache_key = getattr(self, "cache_key")
 
-        if not hasattr(type_, cache_key):
-            setattr(type_, cache_key, {})
+        if not hasattr(owner, cache_key):
+            setattr(owner, cache_key, {})
 
-        return getattr(type_, cache_key)
+        return getattr(owner, cache_key)
 
-    def __get__(self, obj: _T | None, type_: type[_T] | None = None) -> _R_co:
-        if type_ is None and obj is not None:
-            type_ = type(obj)
-        elif type_ is None:
-            raise NotImplementedError("Both obj and type_ are None")
-
+    def __get__(self, instance: _T | None, owner: type[_T]) -> _R_co:
         if not isinstance(self, classproperty.cached):
-            return self.fget(type_)
+            return self.fget(owner)
 
-        if self.__name__ in (cache := self._get_cache(type_)):
+        if self.__name__ in (cache := self._get_cache(owner)):
             return cache[self.__name__]
 
-        value = self.fget(type_)
+        value = self.fget(owner)
         cache[self.__name__] = value
         return value
 
-    def __set__(self, obj: _T, value: _T_Any) -> None:
+    def __set__(self, instance: _T, value: _T_Any) -> None:
         if not self.fset:
             raise AttributeError(
-                f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no setter.'
+                f'classproperty with getter "{self.__name__}" of "{instance.__class__.__name__}" object has no setter.'
             )
 
-        type_ = type(obj)
+        owner = type(instance)
 
         if not isinstance(self, classproperty.cached):
-            return self.fset(type_, value)
+            return self.fset(owner, value)
 
-        if self.__name__ in (cache := self._get_cache(type_)):
+        if self.__name__ in (cache := self._get_cache(owner)):
             del cache[self.__name__]
 
-        self.fset(type_, value)
+        self.fset(owner, value)
 
-    def __delete__(self, obj: _T) -> None:
+    def __delete__(self, instance: _T) -> None:
         if not self.fdel:
             raise AttributeError(
-                f'classproperty with getter "{self.__name__}" of "{obj.__class__.__name__}" object has no deleter.'
+                f'classproperty with getter "{self.__name__}" of "{instance.__class__.__name__}" object has no deleter.'
             )
 
-        type_ = type(obj)
+        owner = type(instance)
 
         if not isinstance(self, classproperty.cached):
-            return self.fdel(type_)
+            return self.fdel(owner)
 
-        if self.__name__ in (cache := self._get_cache(type_)):
+        if self.__name__ in (cache := self._get_cache(owner)):
             del cache[self.__name__]
 
-        self.fdel(type_)
+        self.fdel(owner)
 
 
 class classproperty(classproperty_base[_T, _R_co, _T_Any]):
