@@ -15,13 +15,15 @@ from typing import (
     Iterator,
     Mapping,
     NoReturn,
+    ParamSpec,
     Protocol,
+    Self,
     Sequence,
     cast,
     overload,
 )
 
-from typing_extensions import Self, TypeVar, deprecated
+from typing_extensions import TypeVar, deprecated
 
 from .builtins import KwargsT, R0_co, R_co
 
@@ -124,7 +126,26 @@ class _InjectSelfMeta(type):
         return any(type.__subclasscheck__(t, subclass) for t in cls._subclasses)
 
 
-class _InjectedSelfFunc[T, **P, R](Protocol):
+_T = TypeVar("_T")
+_T0 = TypeVar("_T0")
+
+_T_co = TypeVar("_T_co", covariant=True)
+_T0_co = TypeVar("_T0_co", covariant=True)
+_T1_co = TypeVar("_T1_co", covariant=True)
+
+_R_co = TypeVar("_R_co", covariant=True)
+_R0_co = TypeVar("_R0_co", covariant=True)
+_R1_co = TypeVar("_R1_co", covariant=True)
+
+_T_Any = TypeVar("_T_Any", default=Any)
+_T0_Any = TypeVar("_T0_Any", default=Any)
+
+_P = ParamSpec("_P")
+_P0 = ParamSpec("_P0")
+_P1 = ParamSpec("_P1")
+
+
+class _InjectedSelfFunc(Protocol[_T_co, _P, _R_co]):
     """
     Protocol defining the callable interface for wrapped functions under `inject_self`.
 
@@ -135,24 +156,17 @@ class _InjectedSelfFunc[T, **P, R](Protocol):
     """
 
     @overload
-    @staticmethod
-    def __call__(*args: P.args, **kwargs: P.kwargs) -> R: ...
-
+    def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _R_co: ...
     @overload
-    @staticmethod
-    def __call__(self: T, /, *args: P.args, **kwargs: P.kwargs) -> R: ...  # pyright: ignore[reportSelfClsParameterName]
-
+    def __call__(_self, self: _T_co, /, *args: _P.args, **kwargs: _P.kwargs) -> _R_co: ...  # type: ignore[misc]  # noqa: N805
     @overload
-    @staticmethod
-    def __call__(cls: type[T], /, *args: P.args, **kwargs: P.kwargs) -> R: ...  # pyright: ignore[reportSelfClsParameterName]
+    def __call__(self, cls: type[_T_co], /, *args: _P.args, **kwargs: _P.kwargs) -> _R_co: ...  # pyright: ignore[reportGeneralTypeIssues]
 
 
 _self_objects_cache = dict[type[Any], Any]()
 
-SelfInjectT = TypeVar("SelfInjectT", bound="_InjectSelfBase[Any, ..., Any]")
 
-
-class _InjectSelfBase[T, **P, R]:
+class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
     """
     Base descriptor implementation for `inject_self`.
     """
@@ -163,7 +177,7 @@ class _InjectSelfBase[T, **P, R]:
     _signature: Signature | None
     _init_signature: Signature | None
 
-    def __init__(self, function: Callable[Concatenate[T, P], R], /, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, function: Callable[Concatenate[_T_co, _P], _R_co], /, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the inject_self descriptor.
 
@@ -178,17 +192,16 @@ class _InjectSelfBase[T, **P, R]:
         self.args = args
         self.kwargs = kwargs
 
-    def __get__(self, instance: T | None, owner: type[T]) -> _InjectedSelfFunc[T, P, R]:
+    def __get__[T](self, instance: T | None, owner: type[T]) -> _InjectedSelfFunc[T, _P, _R_co]:  # pyright: ignore[reportGeneralTypeIssues]
         """
         Return a wrapped callable that automatically injects an instance as the first argument when called.
         """
 
         @wraps(self._function)
-        def _wrapper(*args: Any, **kwargs: Any) -> R:
+        def _wrapper(*args: Any, **kwargs: Any) -> _R_co:
             """
             Call wrapper that performs the actual injection of `self`.
             """
-
             if args and isinstance((first_arg := args[0]), (owner, type(owner))):
                 # Instance or class explicitly provided as first argument
                 obj = first_arg if isinstance(first_arg, owner) else first_arg()  # type: ignore[operator]
@@ -200,11 +213,11 @@ class _InjectSelfBase[T, **P, R]:
                 # Accessed via instance
                 obj = instance
 
-            return self._function(obj, *args, **kwargs)
+            return self._function(obj, *args, **kwargs)  # type: ignore[arg-type]
 
         return _wrapper
 
-    def _handle_class_access(self, owner: type[T], kwargs: dict[str, Any]) -> tuple[T, dict[str, Any]]:
+    def _handle_class_access[T](self, owner: type[T], kwargs: dict[str, Any]) -> tuple[T, dict[str, Any]]:
         """
         Handle logic when the descriptor is accessed from the class level.
 
@@ -251,7 +264,7 @@ class _InjectSelfBase[T, **P, R]:
         return owner(*self.args, **self.kwargs), kwargs
 
     @property
-    def __func__(self) -> Callable[Concatenate[T, P], R]:
+    def __func__(self) -> Callable[Concatenate[_T_co, _P], _R_co]:
         """Return the original wrapped function."""
         return self._function
 
@@ -278,7 +291,7 @@ class _InjectSelfBase[T, **P, R]:
         return _wrapper
 
 
-class inject_self[T, **P, R](_InjectSelfBase[T, P, R], metaclass=_InjectSelfMeta):
+class inject_self(_InjectSelfBase[_T_co, _P, _R_co], metaclass=_InjectSelfMeta):
     """
     Descriptor that ensures the wrapped function always has a constructed `self`.
 
@@ -291,7 +304,7 @@ class inject_self[T, **P, R](_InjectSelfBase[T, P, R], metaclass=_InjectSelfMeta
 
     __slots__ = ()
 
-    class cached[T0, **P0, R0](_InjectSelfBase[T0, P0, R0], metaclass=_InjectSelfMeta):
+    class cached(_InjectSelfBase[_T0_co, _P0, _R0_co], metaclass=_InjectSelfMeta):
         """
         Variant of `inject_self` that caches the constructed instance.
 
@@ -301,19 +314,19 @@ class inject_self[T, **P, R](_InjectSelfBase[T, P, R], metaclass=_InjectSelfMeta
 
         __slots__ = ()
 
-        class property[T1, R1](metaclass=_InjectSelfMeta):
+        class property(Generic[_T1_co, _P1, _R1_co], metaclass=_InjectSelfMeta):
             """Property variant of `inject_self.cached` that auto-calls the wrapped method."""
 
             __slots__ = ("__func__",)
 
-            def __init__(self, function: Callable[[T1], R1], /) -> None:
+            def __init__(self, function: Callable[[_T1_co], _R1_co], /) -> None:
                 self.__func__ = inject_self.cached(function)
 
-            def __get__(self, instance: T1 | None, owner: type[T1]) -> R1:
+            def __get__(self, instance: _T1_co | None, owner: type[_T1_co]) -> _R1_co:  # pyright: ignore[reportGeneralTypeIssues]
                 """Return the result of calling the cached method without arguments."""
                 return self.__func__.__get__(instance, owner)()
 
-    class init_kwargs[T0, **P0, R0](_InjectSelfBase[T0, P0, R0], metaclass=_InjectSelfMeta):
+    class init_kwargs(_InjectSelfBase[_T0_co, _P0, _R0_co], metaclass=_InjectSelfMeta):
         """
         Variant of `inject_self` that forwards function keyword arguments to the class constructor
         when instantiating `self`.
@@ -321,7 +334,7 @@ class inject_self[T, **P, R](_InjectSelfBase[T, P, R], metaclass=_InjectSelfMeta
 
         __slots__ = ()
 
-        class clean[T1, **P1, R1](_InjectSelfBase[T1, P1, R1], metaclass=_InjectSelfMeta):
+        class clean(_InjectSelfBase[_T1_co, _P1, _R1_co], metaclass=_InjectSelfMeta):
             """
             Variant of `inject_self.init_kwargs` that removes any forwarded kwargs from the final function call
             after using them for construction.
@@ -329,20 +342,20 @@ class inject_self[T, **P, R](_InjectSelfBase[T, P, R], metaclass=_InjectSelfMeta
 
             __slots__ = ()
 
-    class property[T0, R0](metaclass=_InjectSelfMeta):
+    class property(Generic[_T0_co, _R0_co], metaclass=_InjectSelfMeta):
         """Property variant of `inject_self` that auto-calls the wrapped method."""
 
         __slots__ = ("__func__",)
 
-        def __init__(self, function: Callable[[T0], R0], /) -> None:
+        def __init__(self, function: Callable[[_T0_co], _R0_co], /) -> None:
             self.__func__ = inject_self(function)
 
-        def __get__(self, instance: T0 | None, owner: type[T0]) -> R0:
+        def __get__(self, instance: _T0_co | None, owner: type[_T0_co]) -> _R0_co:  # pyright: ignore[reportGeneralTypeIssues]
             """Return the result of calling the injected method without arguments."""
             return self.__func__.__get__(instance, owner)()
 
 
-class _InjectKwargsParamsBase[T, **P, R]:
+class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
     """
     Base descriptor implementation for `inject_kwargs_params`.
     """
@@ -353,7 +366,7 @@ class _InjectKwargsParamsBase[T, **P, R]:
     _kwargs_name = "kwargs"
     _signature: Signature | None
 
-    def __init__(self, func: Callable[Concatenate[T, P], R], /) -> None:
+    def __init__(self, func: Callable[Concatenate[_T_co, _P], _R_co], /) -> None:
         """
         Initialize the inject_kwargs_params descriptor.
 
@@ -364,10 +377,10 @@ class _InjectKwargsParamsBase[T, **P, R]:
         self._signature = None
 
     @overload
-    def __get__(self, instance: None, owner: type[T]) -> Self: ...
+    def __get__(self, instance: None, owner: type[Any]) -> Self: ...
     @overload
-    def __get__(self, instance: T, owner: type[T]) -> Callable[P, R]: ...
-    def __get__(self, instance: T | None, owner: type[T]) -> Self | Callable[P, R]:
+    def __get__(self, instance: Any, owner: type[Any]) -> Callable[_P, _R_co]: ...
+    def __get__(self, instance: Any | None, owner: type[Any]) -> Self | Callable[_P, _R_co]:
         """
         Descriptor binding logic.
 
@@ -387,7 +400,7 @@ class _InjectKwargsParamsBase[T, **P, R]:
             )
 
         @wraps(self._function)
-        def wrapper(*args: Any, **kwargs: Any) -> R:
+        def wrapper(*args: Any, **kwargs: Any) -> _R_co:
             """
             Wrapper that performs parameter injection before calling the wrapped function.
             """
@@ -423,7 +436,7 @@ class _InjectKwargsParamsBase[T, **P, R]:
         return wrapper
 
     @property
-    def __func__(self) -> Callable[Concatenate[T, P], R]:
+    def __func__(self) -> Callable[Concatenate[_T_co, _P], _R_co]:
         """Return the original wrapped function."""
         return self._function
 
@@ -543,12 +556,6 @@ def get_subclasses[T](family: type[T], exclude: Sequence[type[T]] = []) -> list[
             yield subclass
 
     return list(set(_subclasses(family)))
-
-
-_T = TypeVar("_T")
-_T0 = TypeVar("_T0")
-_T_Any = TypeVar("_T_Any", default=Any)
-_T0_Any = TypeVar("_T0_Any", default=Any)
 
 
 class classproperty_base(Generic[_T, R_co, _T_Any]):
