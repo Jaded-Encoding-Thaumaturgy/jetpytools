@@ -192,10 +192,12 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
         self.args = args
         self.kwargs = kwargs
 
-    def __get__[T](self, instance: T | None, owner: type[T]) -> _InjectedSelfFunc[T, _P, _R_co]:  # pyright: ignore[reportGeneralTypeIssues]
+    def __get__(self, instance: Any | None, owner: type | None = None) -> _InjectedSelfFunc[_T_co, _P, _R_co]:  # pyright: ignore[reportGeneralTypeIssues]
         """
         Return a wrapped callable that automatically injects an instance as the first argument when called.
         """
+        if owner is None:
+            owner = type(instance)
 
         @wraps(self._function)
         def _wrapper(*args: Any, **kwargs: Any) -> _R_co:
@@ -380,10 +382,10 @@ class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
         self._signature = None
 
     @overload
-    def __get__(self, instance: None, owner: type[Any]) -> Self: ...
+    def __get__(self, instance: None, owner: type) -> Self: ...
     @overload
-    def __get__(self, instance: Any, owner: type[Any]) -> Callable[_P, _R_co]: ...
-    def __get__(self, instance: Any | None, owner: type[Any]) -> Any:
+    def __get__(self, instance: Any, owner: type | None = None) -> Callable[_P, _R_co]: ...
+    def __get__(self, instance: Any | None, owner: type | None = None) -> Any:
         """
         Descriptor binding logic.
 
@@ -598,7 +600,10 @@ class classproperty_base(Generic[_T, _R_co, _T_Any]):
 
         return getattr(owner, cache_key)
 
-    def __get__(self, instance: _T | None, owner: type[_T]) -> _R_co:
+    def __get__(self, instance: Any | None, owner: type | None = None) -> _R_co:
+        if owner is None:
+            owner = type(instance)
+
         if not isinstance(self, classproperty.cached):
             return self.fget(owner)
 
@@ -609,7 +614,7 @@ class classproperty_base(Generic[_T, _R_co, _T_Any]):
         cache[self.__name__] = value
         return value
 
-    def __set__(self, instance: _T, value: _T_Any) -> None:
+    def __set__(self, instance: Any, value: _T_Any) -> None:
         if not self.fset:
             raise AttributeError(
                 f'classproperty with getter "{self.__name__}" of "{instance.__class__.__name__}" object has no setter.'
@@ -625,7 +630,7 @@ class classproperty_base(Generic[_T, _R_co, _T_Any]):
 
         self.fset(owner, value)
 
-    def __delete__(self, instance: _T) -> None:
+    def __delete__(self, instance: Any) -> None:
         if not self.fdel:
             raise AttributeError(
                 f'classproperty with getter "{self.__name__}" of "{instance.__class__.__name__}" object has no deleter.'
