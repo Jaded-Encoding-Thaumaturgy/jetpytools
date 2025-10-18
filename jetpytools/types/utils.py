@@ -263,6 +263,9 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
 
         return owner(*self.args, **self.kwargs), kwargs
 
+    def __call__(self_, self: _T_co, *args: _P.args, **kwargs: _P.kwargs) -> _R_co:  # type: ignore[misc]  # noqa: N805
+        return self_.__get__(self, type(self))(*args, **kwargs)
+
     @property
     def __func__(self) -> Callable[Concatenate[_T_co, _P], _R_co]:
         """Return the original wrapped function."""
@@ -380,7 +383,7 @@ class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
     def __get__(self, instance: None, owner: type[Any]) -> Self: ...
     @overload
     def __get__(self, instance: Any, owner: type[Any]) -> Callable[_P, _R_co]: ...
-    def __get__(self, instance: Any | None, owner: type[Any]) -> Self | Callable[_P, _R_co]:
+    def __get__(self, instance: Any | None, owner: type[Any]) -> Any:
         """
         Descriptor binding logic.
 
@@ -435,6 +438,9 @@ class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
 
         return wrapper
 
+    def __call__(self_, self: _T_co, *args: _P.args, **kwargs: _P.kwargs) -> _R_co:  # type: ignore[misc]  # noqa: N805
+        return self_.__get__(self, type(self))(*args, **kwargs)
+
     @property
     def __func__(self) -> Callable[Concatenate[_T_co, _P], _R_co]:
         """Return the original wrapped function."""
@@ -467,7 +473,7 @@ class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
         return _wrapper
 
 
-class inject_kwargs_params[T, **P, R](_InjectKwargsParamsBase[T, P, R]):
+class inject_kwargs_params(_InjectKwargsParamsBase[_T_co, _P, _R_co]):
     """
     Descriptor that injects parameters into functions based on an instance's keyword mapping.
 
@@ -478,7 +484,7 @@ class inject_kwargs_params[T, **P, R](_InjectKwargsParamsBase[T, P, R]):
 
     __slots__ = ()
 
-    class add_to_kwargs[T0, **P0, R0](_InjectKwargsParamsBase[T0, P0, R0]):
+    class add_to_kwargs(_InjectKwargsParamsBase[_T0_co, _P0, _R0_co]):
         """
         Variant of `inject_kwargs_params` that merges unused entries from `self.kwargs` into the keyword arguments
         passed to the target function.
