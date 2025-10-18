@@ -113,14 +113,16 @@ class ComparatorFunc(Protocol):
     ) -> T0 | T1: ...
 
 
+@runtime_checkable
 class SupportsIndexing[T](Protocol):
     def __getitem__(self, k: int) -> T: ...
 
 
+@runtime_checkable
 class SupportsKeysAndGetItem[KT, VT](Protocol):
     def keys(self) -> Iterable[KT]: ...
 
     def __getitem__(self, k: KT) -> VT: ...
 
 
-type SupportsFloatOrIndex = SupportsFloat | SupportsIndex
+SupportsFloatOrIndex = SupportsFloat | SupportsIndex
