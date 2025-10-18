@@ -4,7 +4,6 @@ import sys
 from contextlib import suppress
 from functools import wraps
 from inspect import Signature
-from inspect import _empty as empty_param
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -24,7 +23,7 @@ from typing import (
 
 from typing_extensions import Self, TypeVar, deprecated
 
-from .builtins import F0, F1, P0, R0, T0, KwargsT, P, R, R0_co, R_co, T, T_co
+from .builtins import KwargsT, R0_co, R_co
 
 __all__ = [
     "KwargsNotNone",
@@ -343,112 +342,138 @@ class inject_self[T, **P, R](_InjectSelfBase[T, P, R], metaclass=_InjectSelfMeta
             return self.__func__.__get__(instance, owner)()
 
 
-class inject_kwargs_params_base_func(Generic[T_co, P, R_co]):
-    def __call__(self: T_co, *args: P.args, **kwargs: P.kwargs) -> R_co:
-        raise NotImplementedError
+class _InjectKwargsParamsBase[T, **P, R]:
+    """
+    Base descriptor implementation for `inject_kwargs_params`.
+    """
 
-
-class inject_kwargs_params_base(Generic[T_co, P, R_co]):
-    signature: Signature | None
+    __isabstractmethod__ = False
+    __slots__ = ("_function", "_signature")
 
     _kwargs_name = "kwargs"
+    _signature: Signature | None
 
-    def __init__(self, function: Callable[Concatenate[T_co, P], R_co]) -> None:
-        self.function = function
+    def __init__(self, func: Callable[Concatenate[T, P], R], /) -> None:
+        """
+        Initialize the inject_kwargs_params descriptor.
 
-        self.signature = None
+        :param function:    The target function or method whose parameters will be injected
+                            from the instance's `self.kwargs` mapping.
+        """
+        self._function = func
+        self._signature = None
 
-    def __get__(self, class_obj: T, class_type: type[T]) -> inject_kwargs_params_base_func[T_co, P, R_co]:
-        if not self.signature:
-            self.signature = Signature.from_callable(self.function, eval_str=True)
+    @overload
+    def __get__(self, instance: None, owner: type[T]) -> Self: ...
+    @overload
+    def __get__(self, instance: T, owner: type[T]) -> Callable[P, R]: ...
+    def __get__(self, instance: T | None, owner: type[T]) -> Self | Callable[P, R]:
+        """
+        Descriptor binding logic.
 
-            if (
-                isinstance(self, inject_kwargs_params.add_to_kwargs)  # type: ignore[arg-type]
-                and (4 not in {x.kind for x in self.signature.parameters.values()})
-            ):
-                from ..exceptions import CustomValueError
+        When accessed via an instance, returns a wrapped function that injects values from `instance.<_kwargs_name>`
+        into matching function parameters.
 
-                raise CustomValueError(
-                    "This function hasn't got any kwargs!", "inject_kwargs_params.add_to_kwargs", self.function
-                )
+        When accessed via the class, returns the descriptor itself.
+        """
+        if instance is None:
+            return self
 
-        this = self
+        if not hasattr(instance, self._kwargs_name):
+            from ..exceptions import CustomRuntimeError
 
-        @wraps(self.function)
-        def _wrapper(self: Any, *_args: Any, **kwargs: Any) -> R_co:
-            assert this.signature
+            raise CustomRuntimeError(
+                f'Missing attribute "{self._kwargs_name}" on {type(instance).__name__}.', owner, self.__class__
+            )
 
-            if class_obj and not isinstance(self, class_type):
-                _args = (self, *_args)
-                self = class_obj
+        @wraps(self._function)
+        def wrapper(*args: Any, **kwargs: Any) -> R:
+            """
+            Wrapper that performs parameter injection before calling the wrapped function.
+            """
+            injectable_kwargs = dict(getattr(instance, self._kwargs_name))
 
-            if not hasattr(self, this._kwargs_name):
-                from ..exceptions import CustomRuntimeError
+            if not injectable_kwargs:
+                return self._function(instance, *args, **kwargs)
 
-                raise CustomRuntimeError(
-                    f'This class doesn\'t have any "{this._kwargs_name}" attribute!', reason=self.__class__
-                )
+            args_list = [instance, *args]
+            kwargs = kwargs.copy()
 
-            this_kwargs = self.kwargs.copy()
-            args, n_args = list(_args), len(_args)
-
-            for i, (key, value) in enumerate(this.signature.parameters.items()):
-                if key not in this_kwargs:
+            for i, (name, param) in enumerate(self.__signature__.parameters.items()):
+                if name not in injectable_kwargs:
                     continue
 
-                kw_value = this_kwargs.pop(key)
+                value_from_kwargs = injectable_kwargs.pop(name)
 
-                if value.default is empty_param:
-                    continue
-
-                if i < n_args:
-                    if args[i] != value.default:
-                        continue
-
-                    args[i] = kw_value
+                if i < len(args_list):
+                    # Positional arg case
+                    if args_list[i] == param.default:
+                        args_list[i] = value_from_kwargs
                 else:
-                    if key in kwargs and kwargs[key] != value.default:
-                        continue
+                    # Keyword arg case
+                    if kwargs.get(name, param.default) == param.default:
+                        kwargs[name] = value_from_kwargs
 
-                    kwargs[key] = kw_value
+            # Merge leftover kwargs if subclass allows
+            if isinstance(self, inject_kwargs_params.add_to_kwargs):
+                kwargs |= injectable_kwargs
 
-            if isinstance(this, inject_kwargs_params.add_to_kwargs):  # type: ignore[arg-type]
-                kwargs |= this_kwargs
+            return self._function(*tuple(args_list), **kwargs)
 
-            return this.function(self, *args, **kwargs)
+        return wrapper
 
-        return _wrapper  # type: ignore
-
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R_co:
-        return self.__get__(None, self)(*args, **kwargs)  # type: ignore
+    @property
+    def __func__(self) -> Callable[Concatenate[T, P], R]:
+        """Return the original wrapped function."""
+        return self._function
 
     @property
     def __signature__(self) -> Signature:
-        return Signature.from_callable(self.function)
+        """Return (and cache) the signature of the wrapped function."""
+        if not self._signature:
+            self._signature = Signature.from_callable(self._function)
+        return self._signature
 
     @classmethod
-    def with_name(cls, kwargs_name: str) -> type[inject_kwargs_params]:  # type: ignore
-        class _inner(inject_kwargs_params):  # type: ignore
-            _kwargs_name = kwargs_name
+    def with_name[T0, **P0, R0](
+        cls, kwargs_name: str = "kwargs"
+    ) -> Callable[[Callable[Concatenate[T0, P0], R0]], inject_kwargs_params[T0, P0, R0]]:
+        """
+        Decorator factory that creates a subclass of `inject_kwargs_params` with a custom name
+        for the keyword argument store.
+        """
+        ns = cls.__dict__.copy()
+        ns["_kwargs_name"] = kwargs_name
 
-        return _inner
+        custom_cls = type(cls.__name__, cls.__bases__, ns)
+
+        # TODO: The precise subclass type cannot be expressed yet when the class is itself generic.
+        def _wrapper(function: Callable[Concatenate[T0, P0], R0]) -> inject_kwargs_params[T0, P0, R0]:
+            return custom_cls(function)  # pyright: ignore[reportReturnType, reportArgumentType]
+
+        return _wrapper
 
 
-if TYPE_CHECKING:  # love you mypy...
+class inject_kwargs_params[T, **P, R](_InjectKwargsParamsBase[T, P, R]):
+    """
+    Descriptor that injects parameters into functions based on an instance's keyword mapping.
 
-    class _add_to_kwargs:
-        def __call__(self, func: F1) -> F1: ...
+    When a method wrapped with `@inject_kwargs_params` is called, the descriptor inspects the function's signature
+    and replaces any arguments matching keys in `self.kwargs` (or another mapping defined by `_kwargs_name`)
+    if their values equal the parameter's default.
+    """
 
-    class _inject_kwargs_params:
-        def __call__(self, func: F0) -> F0: ...
+    __slots__ = ()
 
-        add_to_kwargs = _add_to_kwargs()
+    class add_to_kwargs[T0, **P0, R0](_InjectKwargsParamsBase[T0, P0, R0]):
+        """
+        Variant of `inject_kwargs_params` that merges unused entries from `self.kwargs` into the keyword arguments
+        passed to the target function.
 
-    inject_kwargs_params = _inject_kwargs_params()
-else:
+        This allows additional context or configuration values to be forwarded without requiring explicit parameters.
+        """
 
-    class inject_kwargs_params(inject_kwargs_params_base[T, P, R], Generic[T, P, R]):
-        class add_to_kwargs(inject_kwargs_params_base[T0, P0, R0], Generic[T0, P0, R0]): ...
+        __slots__ = ()
 
 
 class _ComplexHash[**P, R]:
