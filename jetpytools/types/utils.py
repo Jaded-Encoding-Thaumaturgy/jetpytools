@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from contextlib import suppress
 from functools import wraps
-from inspect import Signature
+from inspect import Signature, get_annotations
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -498,13 +498,13 @@ class inject_kwargs_params(_InjectKwargsParamsBase[_T_co, _P, _R_co]):
 
 
 class _ComplexHash[**P, R]:
-    __slots__ = "func"
+    __slots__ = "_func"
 
     def __init__(self, func: Callable[P, R]) -> None:
-        self.func = func
+        self._func = func
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
-        return self.func(*args, **kwargs)
+        return self._func(*args, **kwargs)
 
     @staticmethod
     def hash(*args: Any) -> int:
@@ -515,8 +515,8 @@ class _ComplexHash[**P, R]:
 
         :return:        Hash of all the combined objects' hashes.
         """
-
         values = list[str]()
+
         for value in args:
             try:
                 new_hash = hash(value)
@@ -531,18 +531,21 @@ class _ComplexHash[**P, R]:
 @_ComplexHash
 def complex_hash[T](cls: type[T]) -> type[T]:
     """
-    Decorator for classes to add a ``__hash__`` method to them.
+    Class decorator that automatically adds a ``__hash__`` method to the target class.
 
-    Especially useful for NamedTuples.
+    The generated ``__hash__`` method computes a hash value derived from:
+    - the class's name
+    - the values of all attributes listed in its type annotations.
+
+    This is particularly useful for immutable data structures (e.g., NamedTuples or dataclasses).
     """
 
     def __hash__(self: T) -> int:  # noqa: N807
-        return complex_hash.hash(self.__class__.__name__, *(getattr(self, key) for key in self.__annotations__))
+        return complex_hash.hash(self.__class__.__name__, *(getattr(self, key) for key in get_annotations(cls)))
 
-    ns = cls.__dict__.copy()
-    ns["__hash__"] = __hash__
+    setattr(cls, __hash__.__name__, __hash__)
 
-    return type(cls.__name__, (cls,), ns)  # pyright: ignore[reportReturnType]
+    return cls
 
 
 def get_subclasses[T](family: type[T], exclude: Sequence[type[T]] = []) -> list[type[T]]:
