@@ -797,22 +797,33 @@ class KwargsNotNone(KwargsT):
 
 
 class SingletonMeta(type):
-    _instances: ClassVar[dict[type[Any], Any]] = {}
+    _instances: ClassVar[dict[SingletonMeta, Any]] = {}
     _singleton_init: bool
 
     def __new__[MetaSelf: SingletonMeta](
-        mcls: type[MetaSelf], name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any
+        mcls: type[MetaSelf],
+        name: str,
+        bases: tuple[type, ...],
+        namespace: dict[str, Any],
+        *,
+        init: bool = False,
+        **kwargs: Any,
     ) -> MetaSelf:
-        namespace["_singleton_init"] = kwargs.pop("init", False)
-        return super().__new__(mcls, name, bases, namespace, **kwargs)
+        cls = super().__new__(mcls, name, bases, namespace, **kwargs)
+        cls._singleton_init = init
+        return cls
 
-    def __call__(cls, *args: Any, **kwargs: Any) -> SingletonMeta:
-        if cls not in cls._instances:
-            cls._instances[cls] = super(SingletonMeta, cls).__call__(*args, **kwargs)
-        elif cls._singleton_init:
-            cls._instances[cls].__init__(*args, **kwargs)
+    if not TYPE_CHECKING:
 
-        return cls._instances[cls]
+        def __call__(cls, *args: Any, **kwargs: Any) -> Any:
+            if cls not in cls._instances:
+                cls._instances[cls] = obj = super().__call__(*args, **kwargs)
+                return obj
+
+            if cls._singleton_init:
+                cls._instances[cls].__init__(*args, **kwargs)
+
+            return cls._instances[cls]
 
 
 class Singleton(metaclass=SingletonMeta):
