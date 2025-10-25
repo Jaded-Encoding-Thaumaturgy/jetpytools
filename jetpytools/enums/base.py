@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-from enum import Enum
+from abc import ABCMeta
+from enum import Enum, EnumMeta
 from typing import Any, Self
 
 from ..exceptions import CustomValueError, NotFoundEnumValue
 from ..types import FuncExcept
 
-__all__ = ["CustomEnum", "CustomIntEnum", "CustomStrEnum"]
+__all__ = ["CustomEnum", "CustomIntEnum", "CustomStrEnum", "EnumABCMeta"]
+
+
+class EnumABCMeta(EnumMeta, ABCMeta):
+    """Metaclass combining EnumMeta and ABCMeta to support abstract enumerations."""
 
 
 class CustomEnum(Enum):
