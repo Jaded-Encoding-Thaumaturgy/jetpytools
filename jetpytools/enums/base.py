@@ -4,7 +4,7 @@ from abc import ABCMeta
 from enum import Enum, EnumMeta
 from typing import Any, Self
 
-from ..exceptions import CustomValueError, NotFoundEnumValue
+from ..exceptions import NotFoundEnumValueError
 from ..types import FuncExcept
 
 __all__ = ["CustomEnum", "CustomIntEnum", "CustomStrEnum", "EnumABCMeta"]
@@ -39,18 +39,18 @@ class CustomEnum(Enum):
         if isinstance(func_except, tuple):
             func_name, var_name = func_except
         else:
-            func_name, var_name = func_except, str(cls)
+            func_name, var_name = func_except, repr(cls)
 
-        raise NotFoundEnumValue(
+        raise NotFoundEnumValueError(
             'The given value for "{var_name}" argument must be a valid {enum_name}, not "{value}"!\n'
             "Valid values are: [{readable_enum}].",
             func_name,
             var_name=var_name,
             enum_name=cls,
             value=value,
-            readable_enum=iter([f"{x.name} ({x.value})" for x in cls]),
+            readable_enum=(f"{name} ({value!r})" for name, value in cls.__members__.items()),
             reason=value,
-        )
+        ) from None
 
 
 class CustomIntEnum(int, CustomEnum):
