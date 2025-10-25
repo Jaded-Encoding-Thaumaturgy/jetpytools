@@ -13,11 +13,7 @@ class CustomEnum(Enum):
     """Base class for custom enums."""
 
     @classmethod
-    def _missing_(cls, value: Any) -> Self | None:
-        return cls.from_param(value)
-
-    @classmethod
-    def from_param(cls, value: Any, func_except: FuncExcept | None = None) -> Self | None:
+    def from_param(cls, value: Any, func_except: FuncExcept | None = None) -> Self:
         """
         Return the enum value from a parameter.
 
@@ -28,22 +24,11 @@ class CustomEnum(Enum):
 
         :raises NotFoundEnumValue:   Variable not found in the given enum.
         """
-
-        if value is None:
-            return None
-
-        if func_except is None:
-            func_except = cls.from_param
-
-        if isinstance(value, cls):
-            return value
-
-        if value is cls:
-            raise CustomValueError("You must select a member, not pass the enum!", func_except)
+        func_except = func_except or cls.from_param
 
         try:
             return cls(value)
-        except Exception:
+        except (ValueError, TypeError):
             pass
 
         if isinstance(func_except, tuple):
