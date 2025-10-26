@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from enum import Enum, EnumMeta
-from typing import Any, Self
+from enum import Enum, EnumMeta, ReprEnum
 
 from ..exceptions import NotFoundEnumValueError
 from ..types import FuncExcept
@@ -53,13 +52,13 @@ class CustomEnum(Enum):
         ) from None
 
 
-class CustomIntEnum(int, CustomEnum):
+class CustomIntEnum(int, CustomEnum, ReprEnum):
     """Base class for custom int enums."""
 
     _value_: int
 
 
-class CustomStrEnum(str, CustomEnum):
+class CustomStrEnum(str, CustomEnum, ReprEnum):
     """Base class for custom str enums."""
 
     _value_: str
