@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from abc import ABCMeta
 from enum import Enum, EnumMeta, ReprEnum
+from enum import property as enum_property
+from typing import TYPE_CHECKING, Any, Self
 
 from ..exceptions import NotFoundEnumValueError
 from ..types import FuncExcept
@@ -55,10 +57,18 @@ class CustomEnum(Enum):
 class CustomIntEnum(int, CustomEnum, ReprEnum):
     """Base class for custom int enums."""
 
-    _value_: int
+    if TYPE_CHECKING:
+        _value_: int
+
+        @enum_property
+        def value(self) -> int: ...
 
 
 class CustomStrEnum(str, CustomEnum, ReprEnum):
     """Base class for custom str enums."""
 
-    _value_: str
+    if TYPE_CHECKING:
+        _value_: str
+
+        @enum_property
+        def value(self) -> str: ...
