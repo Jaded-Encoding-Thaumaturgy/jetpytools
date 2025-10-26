@@ -1,6 +1,6 @@
 """Collection of stuff that's useful in general python programming"""
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 
 __author_name__, __author_email__ = "Jaded Encoding Thaumaturgy", "jaded.encoding.thaumaturgy@gmail.com"
 __maintainer_name__, __maintainer_email__ = __author_name__, __author_email__
