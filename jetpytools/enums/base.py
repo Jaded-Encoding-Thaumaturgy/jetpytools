@@ -5,14 +5,33 @@ from enum import Enum, EnumMeta, ReprEnum
 from enum import property as enum_property
 from typing import TYPE_CHECKING, Any, Self
 
-from ..exceptions import NotFoundEnumValueError
-from ..types import FuncExcept
+from ..exceptions import CustomTypeError, NotFoundEnumValueError
+from ..types import FuncExcept, copy_signature
 
 __all__ = ["CustomEnum", "CustomIntEnum", "CustomStrEnum", "EnumABCMeta"]
 
 
 class EnumABCMeta(EnumMeta, ABCMeta):
     """Metaclass combining EnumMeta and ABCMeta to support abstract enumerations."""
+
+    @copy_signature(EnumMeta.__new__)
+    def __new__(mcls, *args: Any, **kwargs: Any) -> Any:
+        enum_cls = super().__new__(mcls, *args, **kwargs)
+
+        if len(enum_cls) == 0:
+            return enum_cls
+
+        if enum_cls.__abstractmethods__:
+            raise CustomTypeError(
+                "Can't instantiate abstract class {cls_name} without an implementation "
+                "for abstract method{plural} {methods}.",
+                enum_cls,
+                cls_name=enum_cls.__name__,
+                plural="s" if len(enum_cls.__abstractmethods__) > 1 else "",
+                methods=", ".join(f"'{n}'" for n in sorted(enum_cls.__abstractmethods__)),
+            )
+
+        return enum_cls
 
 
 class CustomEnum(Enum):
