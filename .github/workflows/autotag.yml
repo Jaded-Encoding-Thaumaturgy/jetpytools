@@ -2,7 +2,7 @@ name: Check and create tag
 on:
   push:
     branches:
-      - main
+      - v1.7.X
     paths:
       - jetpytools/_metadata.py
 
