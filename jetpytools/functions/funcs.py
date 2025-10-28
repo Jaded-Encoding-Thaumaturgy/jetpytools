@@ -4,7 +4,7 @@ from inspect import signature
 from typing import Any, Callable, Concatenate, overload
 
 from ..exceptions import CustomRuntimeError, CustomValueError
-from ..types import MISSING, KwargsT, MissingT
+from ..types import KwargsT
 
 __all__ = ["fallback", "filter_kwargs", "iterate", "kwargs_fallback"]
 
@@ -44,30 +44,14 @@ def iterate[T, **P, R](
     return result
 
 
-fallback_missing = object()
+_fallback_missing = object()
 
 
 @overload
-def fallback[T](value: T | None, fallback: T, /) -> T: ...
-
-
-@overload
-def fallback[T](value: T | None, fallback0: T | None, default: T, /) -> T: ...
-
-
-@overload
-def fallback[T](value: T | None, fallback0: T | None, fallback1: T | None, default: T, /) -> T: ...
-
-
-@overload
-def fallback[T](value: T | None, *fallbacks: T | None) -> T | MissingT: ...
-
-
+def fallback[T](value: T | None, *fallbacks: T | None) -> T: ...
 @overload
 def fallback[T](value: T | None, *fallbacks: T | None, default: T) -> T: ...
-
-
-def fallback[T](value: T | None, *fallbacks: T | None, default: Any | T = fallback_missing) -> T | MissingT:
+def fallback[T](value: T | None, *fallbacks: T | None, default: Any = _fallback_missing) -> T:
     """
     Utility function that returns a value or a fallback if the value is None.
 
@@ -81,53 +65,27 @@ def fallback[T](value: T | None, *fallbacks: T | None, default: Any | T = fallba
         6
 
     :param value:               Input value to evaluate. Can be None.
-    :param fallback_value:      Value to return if the input value is None.
+    :param fallbacks:           Value to return if the input value is None.
 
     :return:                    Input value or fallback value if input value is None.
     """
+    for v in (value, *fallbacks):
+        if v is not None:
+            return v
 
-    if value is not None:
-        return value
-
-    for fallback in fallbacks:
-        if fallback is not None:
-            return fallback
-
-    if default is not fallback_missing:
+    if default is not _fallback_missing:
         return default
-    elif len(fallbacks) > 3:
-        return MISSING
 
     raise CustomRuntimeError("You need to specify a default/fallback value!")
 
 
 @overload
-def kwargs_fallback[T](input_value: T | None, kwargs: tuple[KwargsT, str], fallback: T, /) -> T: ...
-
-
+def kwargs_fallback[T](value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None) -> T: ...
 @overload
-def kwargs_fallback[T](input_value: T | None, kwargs: tuple[KwargsT, str], fallback0: T | None, default: T, /) -> T: ...
-
-
-@overload
+def kwargs_fallback[T](value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None, default: T) -> T: ...
 def kwargs_fallback[T](
-    input_value: T | None, kwargs: tuple[KwargsT, str], fallback0: T | None, fallback1: T | None, default: T, /
-) -> T: ...
-
-
-@overload
-def kwargs_fallback[T](input_value: T | None, kwargs: tuple[KwargsT, str], /, *fallbacks: T | None) -> T | MissingT: ...
-
-
-@overload
-def kwargs_fallback[T](
-    input_value: T | None, kwargs: tuple[KwargsT, str], /, *fallbacks: T | None, default: T
-) -> T: ...
-
-
-def kwargs_fallback[T](
-    value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None, default: Any | T = fallback_missing
-) -> T | MissingT:
+    value: T | None, kwargs: tuple[KwargsT, str], *fallbacks: T | None, default: Any = _fallback_missing
+) -> T:
     """Utility function to return a fallback value from kwargs if value was not found or is None."""
 
     return fallback(value, kwargs[0].get(kwargs[1], None), *fallbacks, default=default)
