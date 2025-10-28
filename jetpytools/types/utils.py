@@ -723,9 +723,8 @@ class cachedproperty(property, Generic[_R_co, _T_Any]):
 
     if sys.version_info < (3, 13):
 
-        def __init__(self, fget: Any, fset: Any | None = None, fdel: Any | None = None, doc: str | None = None) -> None:
-            self.__name__ = fget.__name__
-            super().__init__(fget, fset, fdel, doc)
+        def __set_name__(self, owner: object, name: str) -> None:
+            self.__name__ = name
 
     @overload
     def __get__(self, instance: None, owner: type | None = None) -> Self: ...
