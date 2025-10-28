@@ -78,6 +78,7 @@ class CustomIntEnum(int, CustomEnum, ReprEnum):
 
     if TYPE_CHECKING:
         _value_: int
+        _value2member_map_: dict[int, Enum]
 
         @enum_property
         def value(self) -> int: ...
@@ -88,6 +89,7 @@ class CustomStrEnum(str, CustomEnum, ReprEnum):
 
     if TYPE_CHECKING:
         _value_: str
+        _value2member_map_: dict[str, Enum]
 
         @enum_property
         def value(self) -> str: ...
