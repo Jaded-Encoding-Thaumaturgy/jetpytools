@@ -4,6 +4,7 @@ import sys
 from contextlib import suppress
 from functools import wraps
 from inspect import Signature, get_annotations
+from types import LambdaType
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -722,6 +723,16 @@ class cachedproperty(property, Generic[_R_co, _T_Any]):
         def deleter(self, fdel: Callable[..., None]) -> cachedproperty[_R_co, _T_Any]: ...
 
     if sys.version_info < (3, 13):
+
+        def __init__(
+            self,
+            fget: Callable[[Any], _R_co],
+            fset: Callable[[Any, _T_Any], None] | None = None,
+            fdel: Callable[[Any], None] | None = None,
+            doc: str | None = None,
+        ) -> None:
+            self.__name__ = fget.__name__ + f"_{id(fget)}" if isinstance(fget, LambdaType) else fget.__name__
+            super().__init__(fget, fset, fdel, doc)
 
         def __set_name__(self, owner: object, name: str) -> None:
             self.__name__ = name
