@@ -220,7 +220,7 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
 
         return _wrapper
 
-    def _handle_class_access[T](self, owner: type[T], kwargs: dict[str, Any]) -> tuple[T, dict[str, Any]]:
+    def _handle_class_access(self, owner: type, kwargs: dict[str, Any]) -> tuple[object, dict[str, Any]]:
         """
         Handle logic when the descriptor is accessed from the class level.
 
@@ -233,7 +233,7 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
             try:
                 return _self_objects_cache[owner], kwargs
             except KeyError:
-                return _self_objects_cache.setdefault(owner, owner()), kwargs
+                return _self_objects_cache.setdefault(owner, owner(*self.args, **self.kwargs)), kwargs
 
         if isinstance(self, (inject_self.init_kwargs, inject_self.init_kwargs.clean)):
             # Constructor accepts forwarded kwargs
