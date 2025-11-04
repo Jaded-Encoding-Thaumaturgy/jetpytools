@@ -193,24 +193,41 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
         self.args = args
         self.kwargs = kwargs
 
-    def __get__(self, instance: Any | None, owner: type | None = None) -> _InjectedSelfFunc[_T_co, _P, _R_co]:  # pyright: ignore[reportGeneralTypeIssues]
+    @overload
+    def __get__(self, instance: None, owner: type) -> _InjectedSelfFunc[_T_co, _P, _R_co]: ...  # pyright: ignore[reportGeneralTypeIssues]
+    @overload
+    def __get__(self, instance: Any, owner: type | None = None) -> Callable[_P, _R_co]: ...  # pyright: ignore[reportGeneralTypeIssues]
+    def __get__(self, instance: Any | None, owner: type | None = None) -> Any:
         """
         Return a wrapped callable that automatically injects an instance as the first argument when called.
         """
-        if owner is None:
-            owner = type(instance)
 
         @wraps(self._function)
         def _wrapper(*args: Any, **kwargs: Any) -> _R_co:
             """
             Call wrapper that performs the actual injection of `self`.
             """
-            if args and isinstance((first_arg := args[0]), (owner, type(owner))):
+            nonlocal instance, owner
+
+            if instance is None and args:
                 # Instance or class explicitly provided as first argument
-                obj = first_arg if isinstance(first_arg, owner) else first_arg()  # type: ignore[operator]
-                args = args[1:]
-            elif instance is None:
+                first_arg = args[0]
+
+                if owner and isinstance(first_arg, owner):
+                    instance, args = first_arg, args[1:]
+                elif isinstance(first_arg, type(owner)):
+                    owner, args = first_arg, args[1:]
+
+            if instance is None:
                 # Accessed via class
+
+                if owner is None:
+                    from ..exceptions import CustomTypeError
+
+                    raise CustomTypeError(
+                        "Cannot determine owner type for class access.", self.__class__, self._function
+                    )
+
                 obj, kwargs = self._handle_class_access(owner, kwargs)
             else:
                 # Accessed via instance
@@ -267,7 +284,7 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
         return owner(*self.args, **self.kwargs), kwargs
 
     def __call__(self_, self: _T_co, *args: _P.args, **kwargs: _P.kwargs) -> _R_co:  # type: ignore[misc]  # noqa: N805
-        return self_.__get__(self, type(self))(*args, **kwargs)
+        return self_.__get__(self, None)(*args, **kwargs)
 
     @property
     def __func__(self) -> Callable[Concatenate[_T_co, _P], _R_co]:
