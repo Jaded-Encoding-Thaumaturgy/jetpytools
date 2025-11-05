@@ -19,19 +19,6 @@ updates:
     patterns: ["*"]
     multi-ecosystem-group: "infrastructure"
 
-    allow:
-      - dependency-type: production
-
-    versioning-strategy: increase-if-necessary
-
-  - package-ecosystem: "pip"
-    directory: "/"
-    patterns: ["*"]
-    multi-ecosystem-group: "infrastructure"
-
-    allow:
-      - dependency-type: development
-
     versioning-strategy: increase
 
   - package-ecosystem: "github-actions"
