@@ -34,10 +34,13 @@ jobs:
         run: |
           uv sync --locked
 
-      - name: Running ruff
-        run: |
-          uv run ruff check .
-          uv run ruff format --check --diff
+      - name: Run Ruff check
+        id: ruff_check
+        run: uv run ruff check .
+
+      - name: Run Ruff format
+        if: success() || (failure() && steps.ruff_check.conclusion == 'failure')
+        run: uv run ruff format --check --diff
 
   mypy:
     runs-on: ubuntu-latest
