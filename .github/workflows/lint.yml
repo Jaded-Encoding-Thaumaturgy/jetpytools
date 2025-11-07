@@ -1,4 +1,4 @@
-name: Lint Python code with Ruff & mypy
+name: Lint
 
 on:
   workflow_dispatch:
