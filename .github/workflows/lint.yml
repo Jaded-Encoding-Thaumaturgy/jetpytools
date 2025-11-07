@@ -1,6 +1,15 @@
-name: Lint
+name: Lint Python code with Ruff & mypy
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "**.py"
+  pull_request:
+    paths:
+      - "**.py"
 
 jobs:
   ruff:

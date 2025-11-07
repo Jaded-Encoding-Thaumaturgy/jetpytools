@@ -1,10 +1,9 @@
 name: Check and create tag
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
     paths:
-      - jetpytools/_metadata.py
+      - jetpytools/_version.py
 
 jobs:
   new_version:
