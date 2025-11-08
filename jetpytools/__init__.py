@@ -1,3 +1,4 @@
+from ._version import __version__
 from .enums import *
 from .exceptions import *
 from .functions import *

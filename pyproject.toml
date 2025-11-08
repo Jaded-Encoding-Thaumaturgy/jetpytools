@@ -49,7 +49,7 @@ exclude = ["tests"]
 include = ["/jetpytools"]
 
 [tool.hatch.version]
-path = "jetpytools/_metadata.py"
+path = "jetpytools/_version.py"
 
 [tool.pytest.ini_options]
 pythonpath = "."
