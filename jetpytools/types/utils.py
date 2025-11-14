@@ -571,7 +571,10 @@ def complex_hash[T](cls: type[T]) -> type[T]:
     """
 
     def __hash__(self: T) -> int:  # noqa: N807
-        from inspect import get_annotations
+        if sys.version_info >= (3, 14):
+            from annotationlib import get_annotations
+        else:
+            from inspect import get_annotations
 
         return complex_hash.hash(self.__class__.__name__, *(getattr(self, key) for key in get_annotations(cls)))
 
