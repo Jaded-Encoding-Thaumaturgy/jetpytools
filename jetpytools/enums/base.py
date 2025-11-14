@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta
 from enum import Enum, EnumMeta, ReprEnum
+from enum import property as enum_property
 from typing import TYPE_CHECKING, Any, Self
 
 from ..exceptions import CustomTypeError, NotFoundEnumValueError
@@ -76,8 +77,6 @@ class CustomIntEnum(int, CustomEnum, ReprEnum):
     """Base class for custom int enums."""
 
     if TYPE_CHECKING:
-        from enum import property as enum_property
-
         _value_: int
         _value2member_map_: dict[int, Enum]
 
@@ -89,8 +88,6 @@ class CustomStrEnum(str, CustomEnum, ReprEnum):
     """Base class for custom str enums."""
 
     if TYPE_CHECKING:
-        from enum import property as enum_property
-
         _value_: str
         _value2member_map_: dict[str, Enum]
 
