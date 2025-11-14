@@ -3,7 +3,6 @@ from __future__ import annotations
 import sys
 from contextlib import suppress
 from functools import wraps
-from inspect import Signature, get_annotations
 from types import LambdaType
 from typing import (
     TYPE_CHECKING,
@@ -20,11 +19,18 @@ from typing import (
     Protocol,
     Self,
     Sequence,
+    TypeVar,
     cast,
     overload,
 )
 
-from typing_extensions import TypeVar, deprecated
+if TYPE_CHECKING:
+    from inspect import Signature
+
+if sys.version_info < (3, 13):
+    from typing_extensions import TypeVar, deprecated
+else:
+    from warnings import deprecated
 
 from .builtins import KwargsT
 
@@ -269,6 +275,8 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
                 )
 
             if not self._init_signature:
+                from inspect import Signature
+
                 self._init_signature = Signature.from_callable(owner)
 
             init_kwargs = self.kwargs | {k: kwargs[k] for k in kwargs.keys() & self._init_signature.parameters.keys()}
@@ -295,6 +303,8 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
     def __signature__(self) -> Signature:
         """Return (and cache) the signature of the wrapped function."""
         if not self._signature:
+            from inspect import Signature
+
             self._signature = Signature.from_callable(self._function)
         return self._signature
 
@@ -470,6 +480,8 @@ class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
     def __signature__(self) -> Signature:
         """Return (and cache) the signature of the wrapped function."""
         if not self._signature:
+            from inspect import Signature
+
             self._signature = Signature.from_callable(self._function)
         return self._signature
 
@@ -559,6 +571,8 @@ def complex_hash[T](cls: type[T]) -> type[T]:
     """
 
     def __hash__(self: T) -> int:  # noqa: N807
+        from inspect import get_annotations
+
         return complex_hash.hash(self.__class__.__name__, *(getattr(self, key) for key in get_annotations(cls)))
 
     setattr(cls, __hash__.__name__, __hash__)

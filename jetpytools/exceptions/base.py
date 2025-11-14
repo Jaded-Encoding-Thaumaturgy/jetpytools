@@ -4,9 +4,7 @@ import sys
 from contextlib import AbstractContextManager
 from copy import deepcopy
 from types import TracebackType
-from typing import TYPE_CHECKING, Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ..types import MISSING, FuncExcept, MissingT, SupportsString
 
@@ -23,59 +21,26 @@ __all__ = [
 ]
 
 
-if TYPE_CHECKING:
-
-    class ExceptionError(Exception):
-        __name__: str
-        __qualname__: str
-else:
-    ExceptionError = Exception
-
-
 class CustomErrorMeta(type):
     """Custom base exception meta class."""
 
-    def __new__[MetaSelf: CustomErrorMeta](cls: type[MetaSelf], *args: Any) -> MetaSelf:
-        return CustomErrorMeta.setup_exception(super().__new__(cls, *args))
-
-    @staticmethod
-    def setup_exception[MetaSelf: CustomErrorMeta](
-        exception: MetaSelf, override: str | ExceptionError | None = None
+    def __new__[MetaSelf: CustomErrorMeta](
+        mcls: type[MetaSelf], name: str, bases: tuple[type, ...], namespace: dict[str, Any], /, **kwds: Any
     ) -> MetaSelf:
-        """
-        Setup an exception for later use in CustomError.
+        cls = super().__new__(mcls, name, bases, namespace, **kwds)
 
-        :param exception:   Exception to update.
-        :param override:    Optional name or exception from which get the override values.
-
-        :return:            Set up exception.
-        """
-
-        if override:
-            if isinstance(override, str):
-                over_name = over_qual = override
-            else:
-                over_name, over_qual = override.__name__, override.__qualname__
-
-            if over_name.startswith("Custom"):
-                exception.__name__ = over_name
-            else:
-                exception.__name__ = f"Custom{over_name}"
-
-            exception.__qualname__ = over_qual
-
-        if exception.__qualname__.startswith("Custom"):
-            exception.__qualname__ = exception.__qualname__[6:]
+        if cls.__qualname__.startswith("Custom"):
+            cls.__qualname__ = cls.__qualname__[6:]
 
         if sys.stdout and sys.stdout.isatty():
-            exception.__qualname__ = f"\033[0;31;1m{exception.__qualname__}\033[0m"
+            cls.__qualname__ = f"\033[0;31;1m{cls.__qualname__}\033[0m"
 
-        exception.__module__ = Exception.__module__
+        cls.__module__ = Exception.__module__
 
-        return exception
+        return cls
 
 
-class CustomError(ExceptionError, metaclass=CustomErrorMeta):
+class CustomError(Exception, metaclass=CustomErrorMeta):
     """Custom base exception class."""
 
     def __init__(

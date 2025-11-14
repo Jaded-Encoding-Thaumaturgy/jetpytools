@@ -1,24 +1,11 @@
 from __future__ import annotations
 
-import ctypes
 import sys
-from io import BufferedRandom, BufferedReader, BufferedWriter, FileIO, TextIOWrapper
-from os import F_OK, R_OK, W_OK, X_OK, access, getenv, path
 from pathlib import Path
-from typing import IO, Any, BinaryIO, Callable, Literal, overload
+from typing import Callable
 
 from ..exceptions import FileIsADirectoryError, FileNotExistsError, FilePermissionError, FileWasNotFoundError
-from ..types import (
-    FileOpener,
-    FilePathType,
-    FuncExcept,
-    OpenBinaryMode,
-    OpenBinaryModeReading,
-    OpenBinaryModeUpdating,
-    OpenBinaryModeWriting,
-    OpenTextMode,
-    SPath,
-)
+from ..types import FilePathType, FuncExcept, OpenBinaryMode, OpenTextMode, SPath
 
 __all__ = [
     "add_script_path_hook",
@@ -56,7 +43,11 @@ def get_script_path() -> SPath:
 def get_user_data_dir() -> Path:
     """Get user data dir path."""
 
+    from os import getenv, path
+
     if sys.platform == "win32":
+        import ctypes
+
         buf = ctypes.create_unicode_buffer(1024)
         ctypes.windll.shell32.SHGetFolderPathW(None, 28, None, 0, buf)
 
@@ -89,6 +80,7 @@ def check_perms(
     :raises FileIsADirectoryError:  Given path is a directory, not a file.
     :raises FileWasNotFoundError:   Parent directories exist, but the given file could not be found.
     """
+    from os import F_OK, R_OK, W_OK, X_OK, access
 
     file = Path(str(file))
     got_perms = False

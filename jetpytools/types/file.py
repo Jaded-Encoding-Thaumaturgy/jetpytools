@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-import fnmatch
-import shutil
 from os import X_OK, PathLike, access, listdir, path, walk
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, TypeAlias
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Iterable, Literal, Self, TypeAlias
 
 __all__ = [
     "FileDescriptor",
-    "FileOpener",
     "FilePathType",
     "OpenBinaryMode",
     "OpenBinaryModeReading",
@@ -28,8 +23,6 @@ __all__ = [
 FileDescriptor: TypeAlias = int
 
 FilePathType: TypeAlias = str | bytes | PathLike[str] | PathLike[bytes]
-
-FileOpener: TypeAlias = Callable[[str, int], int]
 
 OpenTextModeUpdating: TypeAlias = Literal[
     "r+",
@@ -136,6 +129,8 @@ class SPath(Path):
     def rmdirs(self, missing_ok: bool = False, ignore_errors: bool = True) -> None:
         """Remove the dir path with its contents."""
 
+        import shutil
+
         try:
             return shutil.rmtree(str(self.get_folder()), ignore_errors)
         except FileNotFoundError:
@@ -191,6 +186,9 @@ class SPath(Path):
             raise PathIsNotADirectoryError('The given path, "{self}" is not a directory!', self.copy_dir)
 
         dst.mkdirp()
+
+        import shutil
+
         shutil.copytree(self, dst, dirs_exist_ok=True)
 
         return SPath(dst)
@@ -202,6 +200,7 @@ class SPath(Path):
 
     def fglob(self, pattern: str = "*") -> SPath | None:
         """Glob the path and return the first match."""
+        import fnmatch
 
         for root, dirs, files in walk(self):
             for name in dirs + files:
