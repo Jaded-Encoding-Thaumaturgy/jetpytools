@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from fractions import Fraction
 from typing import Any, Callable, Iterable, Iterator, Protocol, Sequence, overload, runtime_checkable
 
 from ..exceptions import CustomOverflowError
@@ -285,6 +284,8 @@ def norm_display_name(obj: object) -> str:
 
     if isinstance(obj, Iterator):
         return ", ".join(norm_display_name(v) for v in obj).strip()
+
+    from fractions import Fraction
 
     if isinstance(obj, Fraction):
         return f"{obj.numerator}/{obj.denominator}"

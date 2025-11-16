@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, SupportsIndex, TypeAlias
 
-from typing_extensions import TypeIs
-
 from .supports import SupportsString
+
+try:
+    from typing import TypeIs
+except ImportError:
+    from typing_extensions import TypeIs
 
 __all__ = ["Sentinel", "SentinelT", "StrList"]
 
@@ -52,6 +54,8 @@ class SentinelDispatcher:
         return ret_value if cond else self
 
     def check_cb[T, **P](self, callback: Callable[P, tuple[T, bool]]) -> Callable[P, T | SentinelDispatcher]:
+        from functools import wraps
+
         @wraps(callback)
         def _wrap(*args: P.args, **kwargs: P.kwargs) -> T | SentinelDispatcher:
             return self.check(*callback(*args, **kwargs))

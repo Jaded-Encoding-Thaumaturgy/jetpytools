@@ -5,11 +5,9 @@ description = "Collection of stuff that's useful in general python programming"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-authors = [
-    {name = "Jaded Encoding Thaumaturgy"}
-]
+authors = [{ name = "Jaded Encoding Thaumaturgy" }]
 maintainers = [
-    {name = "Jaded Encoding Thaumaturgy", email = "jaded.encoding.thaumaturgy@gmail.com"}
+    { name = "Jaded Encoding Thaumaturgy", email = "jaded.encoding.thaumaturgy@gmail.com" },
 ]
 classifiers = [
     "Natural Language :: English",
@@ -18,30 +16,23 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Typing :: Typed"
+    "Typing :: Typed",
 ]
-dependencies = [
-    "typing_extensions>=4.15.0",
-]
+dependencies = ["typing_extensions>=4.15.0; python_version<'3.13'"]
 
 [project.urls]
 "Source Code" = "https://github.com/Jaded-Encoding-Thaumaturgy/jetpytools"
 "Contact" = "https://discord.gg/XTpc6Fa9eB"
 
 [dependency-groups]
-dev = [
-    "mypy>=1.18.0",
-    "ruff>=0.14.0",
-    "pytest>=8.3.4, <10.0.0",
-    "twine>=6.2.0",
-]
+dev = ["mypy>=1.18.0", "ruff>=0.14.0", "pytest>=8.3.4, <10.0.0", "twine>=6.2.0"]
 
 [build-system]
 requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages= ["jetpytools"]
+packages = ["jetpytools"]
 include = ["jetpytools/py.typed"]
 exclude = ["tests"]
 
@@ -81,17 +72,7 @@ line-length = 120
 docstring-code-format = true
 
 [tool.ruff.lint]
-extend-select = [
-    "E",
-    "C4",
-    "I",
-    "PYI",
-    "Q",
-    "SIM",
-    "N",
-    "W",
-    "RUF"
-]
+extend-select = ["E", "C4", "I", "PYI", "Q", "SIM", "N", "W", "RUF"]
 ignore = ["PYI041"]
 
 [tool.ruff.lint.per-file-ignores]

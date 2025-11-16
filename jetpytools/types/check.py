@@ -1,8 +1,12 @@
 from typing import Any, Sequence
 
-from typing_extensions import TypeIs
-
 from .builtins import SoftRange, SoftRangeN, SoftRangesN, StrictRange
+
+try:
+    from typing import TypeIs
+except ImportError:
+    from typing_extensions import TypeIs
+
 
 __all__ = ["is_soft_range", "is_soft_range_n", "is_soft_ranges_n", "is_strict_range"]
 

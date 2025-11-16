@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from inspect import signature
 from typing import Any, Callable, Concatenate, overload
 
 from ..exceptions import CustomRuntimeError, CustomValueError
@@ -121,6 +120,8 @@ def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any] | None = None
 
     if not (filtered_kwargs := fallback(kwargs, kw)):
         return {}
+
+    from inspect import signature
 
     try:
         sig = signature(func)
