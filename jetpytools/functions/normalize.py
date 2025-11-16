@@ -274,7 +274,7 @@ def norm_func_name(func_name: SupportsString | Callable[..., Any]) -> str:
 
     if isinstance(func, _HasSelfAttr):
         func = func.__self__ if isinstance(func.__self__, type) else func.__self__.__class__
-        func_name = f"{func.__name__}.{func_name}"
+        func_name = f"{func.__name__}().{func_name}"
 
     return str(func_name).strip()
 
