@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from math import ceil, log, log10
 from typing import Sequence
 
 __all__ = [
@@ -82,6 +81,7 @@ def next_power_of_2(x: float) -> int:
 
 def next_power_of_y(x: float, y: int) -> int:
     """Get the next power of y of x."""
+    from math import ceil, log
 
     if x == 0:
         return 1
@@ -164,5 +164,6 @@ def spline_coeff(
 def ndigits(num: float) -> int:
     if num == 0:
         return 1
+    from math import log10
 
     return int(log10(abs(num))) + 1

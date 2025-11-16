@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import sys
 from contextlib import AbstractContextManager
-from copy import deepcopy
 from types import TracebackType
 from typing import Any, Self
 
@@ -75,6 +74,7 @@ class CustomError(Exception, metaclass=CustomErrorMeta):
         :param func:    Function this exception was raised from.
         :param reason:  Reason of the exception. For example, an optional parameter.
         """
+        from copy import deepcopy
 
         err = deepcopy(self)
 
