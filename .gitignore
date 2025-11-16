@@ -10,3 +10,5 @@
 build/
 dist/
 stgpytools.egg-info/
+
+.vsjet
