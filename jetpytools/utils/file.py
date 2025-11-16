@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from os import F_OK, R_OK, W_OK, X_OK, access, getenv, path
 from pathlib import Path
 from typing import Callable
 
@@ -43,8 +44,6 @@ def get_script_path() -> SPath:
 def get_user_data_dir() -> Path:
     """Get user data dir path."""
 
-    from os import getenv, path
-
     if sys.platform == "win32":
         import ctypes
 
@@ -80,7 +79,6 @@ def check_perms(
     :raises FileIsADirectoryError:  Given path is a directory, not a file.
     :raises FileWasNotFoundError:   Parent directories exist, but the given file could not be found.
     """
-    from os import F_OK, R_OK, W_OK, X_OK, access
 
     file = Path(str(file))
     got_perms = False
