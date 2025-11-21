@@ -1,3 +1,5 @@
+"""A collection of utilities useful for general Python programming."""
+
 from .enums import *
 from .exceptions import *
 from .functions import *

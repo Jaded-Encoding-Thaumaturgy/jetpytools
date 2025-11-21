@@ -1,17 +1,13 @@
 # jetpytools
 
-Collection of stuff that's useful in general python programming
+[![PyPI Version](https://img.shields.io/pypi/v/jetpytools)](https://pypi.org/project/jetpytools/)
+
+A collection of utilities useful for general Python programming.
 
 ## How to install
 
-Install `jetpytools` with the following command:
+`jetpytools` is distributed via **PyPI**, and the latest stable release can be installed using:
 
 ```sh
-pip install jetpytools
-```
-
-Or if you want the latest git version, install it with this command:
-
-```sh
-pip install git+https://github.com/Jaded-Encoding-Thaumaturgy/jetpytools.git
+pip install vsjetpack
 ```
