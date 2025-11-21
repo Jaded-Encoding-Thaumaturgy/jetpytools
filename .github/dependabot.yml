@@ -19,10 +19,9 @@ updates:
     patterns: ["*"]
     multi-ecosystem-group: "infrastructure"
 
-    versioning-strategy: increase
+    versioning-strategy: increase-if-necessary
 
   - package-ecosystem: "github-actions"
     directory: "/"
     patterns: ["*"]
     multi-ecosystem-group: "infrastructure"
-

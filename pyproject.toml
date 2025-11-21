@@ -25,22 +25,32 @@ dependencies = ["typing_extensions>=4.15.0; python_version<'3.13'"]
 "Contact" = "https://discord.gg/XTpc6Fa9eB"
 
 [dependency-groups]
-dev = ["mypy>=1.18.0", "ruff>=0.14.0", "pytest>=8.3.4, <10.0.0", "twine>=6.2.0"]
+dev = ["mypy~=1.18.0", "ruff~=0.14.0", "pytest>=9.0.0, <10.0.0", "twine>=6.2.0"]
 
 [build-system]
-requires = ["hatchling>=1.27.0"]
+requires = ["hatchling>=1.27.0", "versioningit"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+default-version = "0.0.0+unknown"
+next-version = "minor-release"
+write = { file = "jetpytools/_version.py", template = "__version__ = \"{normalized_version}\"\n__version_tuple__ = {version_tuple}" }
+
+[tool.hatch.version.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{next_version}+dirty"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.dirty"
+
+[tool.hatch.build]
+artifacts = ["jetpytools/_version.py"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["jetpytools"]
-include = ["jetpytools/py.typed"]
 exclude = ["tests"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/jetpytools"]
-
-[tool.hatch.version]
-path = "jetpytools/_version.py"
+include = ["jetpytools", "tests"]
 
 [tool.pytest.ini_options]
 pythonpath = "."
