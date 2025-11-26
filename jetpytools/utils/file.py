@@ -68,16 +68,18 @@ def check_perms(
     """
     Confirm whether the user has write/read access to a file.
 
-    :param file:                    Path to file.
-    :param mode:                    Read/Write mode.
-    :param func:                    Function that this was called from, only useful to *func writers.
+    Args:
+        file: Path to file.
+        mode: Read/Write mode.
+        func: Function that this was called from, only useful to *func writers.
 
     :param:                         True if the user has write/read access, else False.
 
-    :raises FileNotExistsError:     File could not be found.
-    :raises FilePermissionError:    User does not have access to the file.
-    :raises FileIsADirectoryError:  Given path is a directory, not a file.
-    :raises FileWasNotFoundError:   Parent directories exist, but the given file could not be found.
+    Raises:
+        FileNotExistsError: File could not be found.
+        FilePermissionError: User does not have access to the file.
+        FileIsADirectoryError: Given path is a directory, not a file.
+        FileWasNotFoundError: Parent directories exist, but the given file could not be found.
     """
 
     file = Path(str(file))

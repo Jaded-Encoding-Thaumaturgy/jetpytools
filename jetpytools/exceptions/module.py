@@ -19,9 +19,10 @@ class CustomImportError(CustomError, ImportError):
         **kwargs: Any,
     ) -> None:
         """
-        :param func:        Function this error was raised from.
-        :param package:     Either the raised error or the name of the missing package.
-        :param message:     Custom error message.
+        Args:
+            func: Function this error was raised from.
+            package: Either the raised error or the name of the missing package.
+            message: Custom error message.
         """
 
         super().__init__(message, func, package=package if isinstance(package, str) else package.name, **kwargs)

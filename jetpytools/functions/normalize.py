@@ -31,12 +31,13 @@ def normalize_seq[T](val: T | Sequence[T], length: int) -> list[T]:
     """
     Normalize a sequence of values.
 
-    :param val:     Input value.
-    :param length:  Amount of items in the output.
-                    If original sequence length is less that this,
-                    the last item will be repeated.
+    Args:
+        val: Input value.
+        length: Amount of items in the output. If original sequence length is less that this, the last item will be
+            repeated.
 
-    :return:        List of normalized values with a set amount of items.
+    Returns:
+        List of normalized values with a set amount of items.
     """
 
     val = to_arr(val)
@@ -88,11 +89,12 @@ def normalize_range(ranges: SoftRange, /, exclusive: bool = False) -> Sequence[i
     """
     Normalize ranges represented by a tuple to an iterable of frame numbers.
 
-    :param ranges:      Ranges to normalize.
-    :param exclusive:   Whether to use exclusive (Python-style) ranges.
-                        Defaults to False.
+    Args:
+        ranges: Ranges to normalize.
+        exclusive: Whether to use exclusive (Python-style) ranges. Defaults to False.
 
-    :return:            List of positive frame ranges.
+    Returns:
+        List of positive frame ranges.
     """
 
     if isinstance(ranges, int):
@@ -158,14 +160,14 @@ def normalize_ranges(
         >>> normalize_ranges([(24, 100), (80, 150)], length=1000)
         [(24, 150)]
 
+    Args:
+        ranges: Frame range or list of frame ranges.
+        length: Number of frames.
+        exclusive: Whether to use exclusive (Python-style) ranges. Defaults to False.
+        strict: Whether to enforce strict checking for out-of-range values.
 
-    :param ranges:      Frame range or list of frame ranges.
-    :param length:      Number of frames.
-    :param exclusive:   Whether to use exclusive (Python-style) ranges.
-                        Defaults to False.
-    :param strict:      Whether to enforce strict checking for out-of-range values.
-
-    :return:            List of positive frame ranges.
+    Returns:
+        List of positive frame ranges.
     """
     from ..utils import clamp
 

@@ -48,9 +48,10 @@ class CustomError(Exception, metaclass=CustomErrorMeta):
         """
         Instantiate a new exception with pretty printing and more.
 
-        :param message: Message of the error.
-        :param func:    Function this exception was raised from.
-        :param reason:  Reason of the exception. For example, an optional parameter.
+        Args:
+            message: Message of the error.
+            func: Function this exception was raised from.
+            reason: Reason of the exception. For example, an optional parameter.
         """
 
         self.message = message
@@ -70,9 +71,10 @@ class CustomError(Exception, metaclass=CustomErrorMeta):
         """
         Copy an existing exception with defaults and instantiate a new one.
 
-        :param message: Message of the error.
-        :param func:    Function this exception was raised from.
-        :param reason:  Reason of the exception. For example, an optional parameter.
+        Args:
+            message: Message of the error.
+            func: Function this exception was raised from.
+            reason: Reason of the exception. For example, an optional parameter.
         """
         from copy import deepcopy
 

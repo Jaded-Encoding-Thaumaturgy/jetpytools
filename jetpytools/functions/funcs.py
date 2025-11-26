@@ -22,14 +22,15 @@ def iterate[T, **P, R](
     >>> iterate(5, lambda x: x * 2, 2)
         20
 
-    :param base:        Base value, etc. to iterate over.
-    :param function:    Function to iterate over the base.
-    :param count:       Number of times to execute function.
-    :param *args:       Positional arguments to pass to the given function.
-    :param **kwargs:    Keyword arguments to pass to the given function.
+    Args:
+        base: Base value, etc. to iterate over.
+        function: Function to iterate over the base.
+        count: Number of times to execute function.
+        *args: Positional arguments to pass to the given function.
+        **kwargs: Keyword arguments to pass to the given function.
 
-    :return:            Value, etc. with the given function run over it
-                        *n* amount of times based on the given count.
+    Returns:
+        Value, etc. with the given function run over it *n* amount of times based on the given count.
     """
 
     if count <= 0:
@@ -63,10 +64,12 @@ def fallback[T](value: T | None, *fallbacks: T | None, default: Any = _fallback_
         >>> fallback(None, 6)
         6
 
-    :param value:               Input value to evaluate. Can be None.
-    :param fallbacks:           Value to return if the input value is None.
+    Args:
+        value: Input value to evaluate. Can be None.
+        *fallbacks: Value to return if the input value is None.
 
-    :return:                    Input value or fallback value if input value is None.
+    Returns:
+        Input value or fallback value if input value is None.
     """
     for v in (value, *fallbacks):
         if v is not None:
@@ -111,11 +114,13 @@ def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any] | None = None
         >>> filter_kwargs(my_func, {"a": 1, "b": "hello", "c": False, "d": "extra"})
         {'a': 1, 'b': 'hello', 'c': False}
 
-    :param func:        The callable to filter kwargs for.
-    :param kwargs:      Dictionary of keyword arguments to filter.
-    :param **kw:        Keyword arguments to filter (used when kwargs is None).
+    Args:
+        func: The callable to filter kwargs for.
+        kwargs: Dictionary of keyword arguments to filter.
+        **kw: Keyword arguments to filter (used when kwargs is None).
 
-    :return:            A dictionary containing only the kwargs that match the callable's parameters.
+    Returns:
+        A dictionary containing only the kwargs that match the callable's parameters.
     """
 
     if not (filtered_kwargs := fallback(kwargs, kw)):
