@@ -42,12 +42,15 @@ class CustomEnum(Enum):
         """
         Return the enum value from a parameter.
 
-        :param value:               Value to instantiate the enum class.
-        :param func_except:         Exception function.
+        Args:
+            value: Value to instantiate the enum class.
+            func_except: Exception function.
 
-        :return:                    Enum value.
+        Returns:
+            Enum value.
 
-        :raises NotFoundEnumValue:   Variable not found in the given enum.
+        Raises:
+            NotFoundEnumValue: Variable not found in the given enum.
         """
         func_except = func_except or cls.from_param
 

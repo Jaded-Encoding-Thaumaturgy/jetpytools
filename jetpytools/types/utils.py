@@ -114,9 +114,13 @@ class _InjectSelfMeta(type):
         """
         Recursively flatten and yield all nested inject_self metaclass relationships.
 
-        :param d:   Optional inner dictionary representing the hierarchy level.
-        :yield:     Each `_InjectSelfMeta` subclass found in the hierarchy.
+        Args:
+            d: Optional inner dictionary representing the hierarchy level.
+
+        Yields:
+            Each `_InjectSelfMeta` subclass found in the hierarchy.
         """
+
         if d is None:
             d = _inject_self_cls[cls]
 
@@ -188,9 +192,10 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
         """
         Initialize the inject_self descriptor.
 
-        :param function:    The function or method to wrap.
-        :param *args:       Positional arguments to pass when instantiating the target class.
-        :param **kwargs:    Keyword arguments to pass when instantiating the target class.
+        Args:
+            function: The function or method to wrap.
+            *args: Positional arguments to pass when instantiating the target class.
+            **kwargs: Keyword arguments to pass when instantiating the target class.
         """
         self._function = function
 
@@ -247,9 +252,12 @@ class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
         """
         Handle logic when the descriptor is accessed from the class level.
 
-        :param owner:   The class object owning the descriptor.
-        :param kwargs:  Keyword arguments passed to the wrapped function.
-        :return:        A tuple of `(self_object, updated_kwargs)`.
+        Args:
+            owner: The class object owning the descriptor.
+            kwargs: Keyword arguments passed to the wrapped function.
+
+        Returns:
+            A tuple of `(self_object, updated_kwargs)`.
         """
         if isinstance(self, inject_self.cached):
             # Cached instance creation
@@ -403,8 +411,9 @@ class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
         """
         Initialize the inject_kwargs_params descriptor.
 
-        :param function:    The target function or method whose parameters will be injected
-                            from the instance's `self.kwargs` mapping.
+        Args:
+            func: The target function or method whose parameters will be injected
+                from the instance's `self.kwargs` mapping.
         """
         self._function = func
         self._signature = None
@@ -541,9 +550,11 @@ class _ComplexHash[**P, R]:
         """
         Recursively hash every unhashable object in ``*args``.
 
-        :param *args:   Objects to be hashed.
+        Args:
+            *args: Objects to be hashed.
 
-        :return:        Hash of all the combined objects' hashes.
+        Returns:
+            Hash of all the combined objects' hashes.
         """
         values = list[str]()
 
@@ -587,11 +598,13 @@ def get_subclasses[T](family: type[T], exclude: Sequence[type[T]] = []) -> list[
     """
     Get all subclasses of a given type.
 
-    :param family:  "Main" type all other classes inherit from.
-    :param exclude: Excluded types from the yield. Note that they won't be excluded from search.
-                    For examples, subclasses of these excluded classes will be yield.
+    Args:
+        family: "Main" type all other classes inherit from.
+        exclude: Excluded types from the yield. Note that they won't be excluded from search. For examples, subclasses
+            of these excluded classes will be yield.
 
-    :return:        List of all subclasses of "family".
+    Returns:
+        List of all subclasses of "family".
     """
 
     def _subclasses(cls: type[T]) -> Iterator[type[T]]:
@@ -706,8 +719,9 @@ class classproperty(classproperty_base[_T, _R_co, _T_Any]):
             """
             Clear cached properties of an type instance.
 
-            :param type_:   The type whose cache should be cleared.
-            :param names:   Specific property names to clear. If None, all cached properties are cleared.
+            Args:
+                type_: The type whose cache should be cleared.
+                names: Specific property names to clear. If None, all cached properties are cleared.
             """
             if names is None:
                 with suppress(AttributeError):
@@ -805,8 +819,9 @@ class cachedproperty(property, Generic[_R_co, _T_Any]):
         """
         Clear cached properties of an object instance.
 
-        :param obj:   The object whose cache should be cleared.
-        :param names: Specific property names to clear. If None, all cached properties are cleared.
+        Args:
+            obj: The object whose cache should be cleared.
+            names: Specific property names to clear. If None, all cached properties are cleared.
         """
         if names is None:
             obj.__dict__.get(cls.cache_key, {}).clear()
@@ -825,9 +840,10 @@ class cachedproperty(property, Generic[_R_co, _T_Any]):
         """
         Update cached property of an object instance.
 
-        :param obj:   The object whose cache should be updated.
-        :param names: Property name to update.
-        :param value: The value to assign.
+        Args:
+            obj: The object whose cache should be updated.
+            name: Property name to update.
+            value: The value to assign.
         """
         obj.__dict__.setdefault(cls.cache_key, {})[name] = value
 

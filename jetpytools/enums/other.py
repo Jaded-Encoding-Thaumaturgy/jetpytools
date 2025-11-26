@@ -9,7 +9,8 @@ class Coordinate:
     """
     Positive set of (x, y) coordinates.
 
-    :raises ValueError:     Negative values were passed.
+    Raises:
+        ValueError: Negative values were passed.
     """
 
     x: int

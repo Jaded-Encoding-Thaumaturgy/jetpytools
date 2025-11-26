@@ -10,13 +10,15 @@ def interleave_arr[T0, T1](arr0: Iterable[T0], arr1: Iterable[T1], n: int = 2) -
     """
     Interleave two arrays of variable length.
 
-    :param arr0:    First array to be interleaved.
-    :param arr1:    Second array to be interleaved.
-    :param n:       The number of elements from arr0 to include in the interleaved sequence
-                    before including an element from arr1.
-
-    :yield:         Elements from either arr0 or arr01.
+    Args:
+        arr0: First array to be interleaved.
+        arr1: Second array to be interleaved.
+        n: The number of elements from arr0 to include in the interleaved sequence before including an element from
+            arr1.
+    Yields:
+        Elements from either arr0 or arr01.
     """
+
     if n <= 0:
         raise ValueError("n must be a positive integer")
 
