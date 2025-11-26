@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+import sys
+
 from .base import CustomError, CustomPermissionError
+
+if sys.version_info < (3, 13):
+    from typing_extensions import deprecated
+else:
+    from warnings import deprecated
 
 __all__ = [
     "FileIsADirectoryError",
@@ -24,6 +31,7 @@ class FilePermissionError(CustomPermissionError):
     """Raised when you try to access a file but haven't got permissions to do so"""
 
 
+@deprecated("FileTypeMismatchError is deprecated and will be removed in a future version.", category=DeprecationWarning)
 class FileTypeMismatchError(CustomError, OSError):
     """Raised when you try to access a file with a FileType != AUTO and it's another file type"""
 
