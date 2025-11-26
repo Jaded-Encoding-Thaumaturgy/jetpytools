@@ -412,8 +412,8 @@ class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
         Initialize the inject_kwargs_params descriptor.
 
         Args:
-            function: The target function or method whose parameters will be injected from the instance's `self.kwargs`
-                mapping.
+            func: The target function or method whose parameters will be injected
+                from the instance's `self.kwargs` mapping.
         """
         self._function = func
         self._signature = None
@@ -842,7 +842,7 @@ class cachedproperty(property, Generic[_R_co, _T_Any]):
 
         Args:
             obj: The object whose cache should be updated.
-            names: Property name to update.
+            name: Property name to update.
             value: The value to assign.
         """
         obj.__dict__.setdefault(cls.cache_key, {})[name] = value
