@@ -17,10 +17,11 @@ def iterate[T, **P, R](
     Different from regular iteration functions is that you do not need to pass a partial object.
     This function accepts *args and **kwargs. These will be passed on to the given function.
 
-    Examples:
-
-    >>> iterate(5, lambda x: x * 2, 2)
+    - Example:
+        ```python
+        >>> iterate(5, lambda x: x * 2, 2)
         20
+        ```
 
     Args:
         base: Base value, etc. to iterate over.
@@ -55,14 +56,13 @@ def fallback[T](value: T | None, *fallbacks: T | None, default: Any = _fallback_
     """
     Utility function that returns a value or a fallback if the value is None.
 
-    Example:
-
-    .. code-block:: python
-
+    - Example:
+        ```python
         >>> fallback(5, 6)
         5
         >>> fallback(None, 6)
         6
+        ```
 
     Args:
         value: Input value to evaluate. Can be None.
@@ -105,14 +105,15 @@ def filter_kwargs(func: Callable[..., Any], kwargs: dict[str, Any] | None = None
     """
     Filter kwargs to only include parameters that match the callable's signature, ignoring **kwargs.
 
-    Examples:
-
+    - Examples:
+        ```python
         >>> def my_func(a: int, b: str, c: bool = True):
         ...     return a, b, c
         >>> filter_kwargs(my_func, a=1, b="hello", c=False, d="extra")
         {'a': 1, 'b': 'hello', 'c': False}
         >>> filter_kwargs(my_func, {"a": 1, "b": "hello", "c": False, "d": "extra"})
         {'a': 1, 'b': 'hello', 'c': False}
+        ```
 
     Args:
         func: The callable to filter kwargs for.

@@ -149,16 +149,15 @@ def normalize_ranges(
     None will be converted to either 0 if it's the first value in a SoftRange, or the end if it's the second item.
     Negative values will be subtracted from the end.
 
-    Examples:
-
-    .. code-block:: python
-
+    - Examples:
+        ```python
         >>> normalize_ranges((None, None), length=1000)
         [(0, 999)]
         >>> normalize_ranges((24, -24), length=1000)
         [(24, 975)]
         >>> normalize_ranges([(24, 100), (80, 150)], length=1000)
         [(24, 150)]
+        ```
 
     Args:
         ranges: Frame range or list of frame ranges.
