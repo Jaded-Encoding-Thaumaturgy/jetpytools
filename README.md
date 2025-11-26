@@ -9,5 +9,5 @@ A collection of utilities useful for general Python programming.
 `jetpytools` is distributed via **PyPI**, and the latest stable release can be installed using:
 
 ```sh
-pip install vsjetpack
+pip install jetpytools
 ```
