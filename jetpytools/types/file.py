@@ -209,17 +209,16 @@ class SPath(Path):
 
         return None
 
-    def find_newest_file(self, pattern: str = "*") -> SPath | None:
+    def find_newest_file(
+        self, pattern: str = "*", *, case_sensitive: bool | None = None, recurse_symlinks: bool = False
+    ) -> SPath | None:
         """Find the most recently modified file matching the given pattern in the directory."""
 
-        matching_files = self.get_folder().glob(pattern)
-
-        try:
-            next(matching_files)
-        except StopIteration:
-            return None
-
-        return max(matching_files, key=lambda p: p.stat().st_mtime)
+        return max(
+            self.get_folder().glob(pattern, case_sensitive=case_sensitive, recurse_symlinks=recurse_symlinks),
+            key=lambda p: p.stat().st_mtime,
+            default=None,
+        )
 
     def get_size(self) -> int:
         """Get the size of the file or directory in bytes."""
