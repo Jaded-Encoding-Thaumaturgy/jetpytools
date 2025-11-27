@@ -132,7 +132,7 @@ class SPath(Path):
         import shutil
 
         try:
-            return shutil.rmtree(str(self.get_folder()), ignore_errors)
+            return shutil.rmtree(self.get_folder(), ignore_errors)
         except FileNotFoundError:
             if not missing_ok:
                 raise
@@ -161,8 +161,10 @@ class SPath(Path):
 
         return self.is_dir() and not any(self.iterdir())
 
-    def move_dir(self, dst: SPath, *, mode: int = 0o777) -> None:
+    def move_dir(self, dst: SPathLike, *, mode: int = 0o777) -> None:
         """Move the directory to the specified destination."""
+
+        dst = SPath(dst)
 
         dst.mkdir(mode, True, True)
 
@@ -177,21 +179,22 @@ class SPath(Path):
 
         self.rmdir()
 
-    def copy_dir(self, dst: SPath) -> SPath:
+    def copy_dir(self, dst: SPathLike) -> SPath:
         """Copy the directory to the specified destination."""
+        import shutil
 
         if not self.is_dir():
             from ..exceptions import PathIsNotADirectoryError
 
             raise PathIsNotADirectoryError('The given path, "{self}" is not a directory!', self.copy_dir)
 
-        dst.mkdirp()
+        dst = SPath(dst)
 
-        import shutil
+        dst.mkdirp()
 
         shutil.copytree(self, dst, dirs_exist_ok=True)
 
-        return SPath(dst)
+        return dst
 
     def lglob(self, pattern: str = "*") -> list[SPath]:
         """Glob the path and return the list of paths."""
