@@ -156,7 +156,7 @@ _P0 = ParamSpec("_P0")
 _P1 = ParamSpec("_P1")
 
 
-class _InjectedSelfFunc(Protocol[_T_co, _P, _R_co]):
+class _InjectedSelfFunc(Protocol[_T_co, _P, _R_co]):  # type: ignore[misc]
     """
     Protocol defining the callable interface for wrapped functions under `inject_self`.
 
