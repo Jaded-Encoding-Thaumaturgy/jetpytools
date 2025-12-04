@@ -71,7 +71,7 @@ class CustomEnum(Enum):
             var_name=var_name,
             enum_name=cls,
             value=value,
-            readable_enum=(f"{name} ({value!r})" for name, value in cls.__members__.items()),
+            readable_enum=(f"{name} ({value!s})" for name, value in cls.__members__.items()),
             reason=value,
         ) from None
 
