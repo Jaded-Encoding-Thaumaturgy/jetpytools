@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from contextlib import suppress
 from functools import wraps
+from threading import Lock
 from types import LambdaType
 from typing import (
     TYPE_CHECKING,
@@ -858,6 +859,8 @@ class KwargsNotNone(KwargsT):
 
 class SingletonMeta(type):
     _instances: ClassVar[dict[SingletonMeta, Any]] = {}
+    _lock = Lock()
+
     _singleton_init: bool
 
     def __new__[MetaSelf: SingletonMeta](
@@ -876,12 +879,16 @@ class SingletonMeta(type):
     if not TYPE_CHECKING:
 
         def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-            if cls not in cls._instances:
-                cls._instances[cls] = obj = super().__call__(*args, **kwargs)
-                return obj
+            if cls in cls._instances and not cls._singleton_init:
+                return cls._instances[cls]
 
-            if cls._singleton_init:
-                cls._instances[cls].__init__(*args, **kwargs)
+            with cls._lock:
+                if cls not in cls._instances:
+                    cls._instances[cls] = obj = super().__call__(*args, **kwargs)
+                    return obj
+
+                if cls._singleton_init:
+                    cls._instances[cls].__init__(*args, **kwargs)
 
             return cls._instances[cls]
 
