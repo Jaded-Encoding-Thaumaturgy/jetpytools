@@ -52,22 +52,22 @@ class SupportsString(Protocol):
 
 @runtime_checkable
 class SupportsDunderLT[T_contra](Protocol):
-    def __lt__(self, other: T_contra) -> bool: ...
+    def __lt__(self, other: T_contra, /) -> bool: ...
 
 
 @runtime_checkable
 class SupportsDunderGT[T_contra](Protocol):
-    def __gt__(self, other: T_contra) -> bool: ...
+    def __gt__(self, other: T_contra, /) -> bool: ...
 
 
 @runtime_checkable
 class SupportsDunderLE[T_contra](Protocol):
-    def __le__(self, other: T_contra) -> bool: ...
+    def __le__(self, other: T_contra, /) -> bool: ...
 
 
 @runtime_checkable
 class SupportsDunderGE[T_contra](Protocol):
-    def __ge__(self, other: T_contra) -> bool: ...
+    def __ge__(self, other: T_contra, /) -> bool: ...
 
 
 @runtime_checkable
@@ -115,14 +115,14 @@ class ComparatorFunc(Protocol):
 
 @runtime_checkable
 class SupportsIndexing[T](Protocol):
-    def __getitem__(self, k: int) -> T: ...
+    def __getitem__(self, k: int, /) -> T: ...
 
 
 @runtime_checkable
 class SupportsKeysAndGetItem[KT, VT](Protocol):
     def keys(self) -> Iterable[KT]: ...
 
-    def __getitem__(self, k: KT) -> VT: ...
+    def __getitem__(self, k: KT, /) -> VT: ...
 
 
 SupportsFloatOrIndex = SupportsFloat | SupportsIndex
