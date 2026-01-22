@@ -31,9 +31,6 @@ class CustomErrorMeta(type):
         if cls.__qualname__.startswith("Custom"):
             cls.__qualname__ = cls.__qualname__[6:]
 
-        if sys.stdout and sys.stdout.isatty():
-            cls.__qualname__ = f"\033[0;31;1m{cls.__qualname__}\033[0m"
-
         cls.__module__ = Exception.__module__
 
         return cls
