@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from contextlib import AbstractContextManager
 from types import TracebackType
@@ -98,10 +99,12 @@ class CustomError(Exception, metaclass=CustomErrorMeta):
         if not message:
             message = "An error occurred!"
 
+        should_color = sys.stdout and sys.stdout.isatty() and not os.getenv("NO_COLOR")
+
         if self.func:
             func_header = norm_func_name(self.func).strip()
 
-            if sys.stdout and sys.stdout.isatty():
+            if should_color:
                 func_header = f"\033[0;36m{func_header}\033[0m"
 
             func_header = f"({func_header}) "
@@ -118,7 +121,7 @@ class CustomError(Exception, metaclass=CustomErrorMeta):
                 if not isinstance(self.reason, dict):
                     reason = f"({reason})"
 
-                if sys.stdout and sys.stdout.isatty():
+                if should_color:
                     reason = f"\033[0;33m{reason}\033[0m"
                 reason = f" {reason}"
         else:
