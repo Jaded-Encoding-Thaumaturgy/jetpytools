@@ -99,7 +99,9 @@ class CustomError(Exception, metaclass=CustomErrorMeta):
         if not message:
             message = "An error occurred!"
 
-        should_color = sys.stdout and sys.stdout.isatty() and not os.getenv("NO_COLOR")
+        should_color = (
+            sys.stdout and sys.stdout.isatty() and not os.getenv("NO_COLOR") and not os.getenv("JETPYTOOLS_NO_COLOR")
+        )
 
         if self.func:
             func_header = norm_func_name(self.func).strip()
