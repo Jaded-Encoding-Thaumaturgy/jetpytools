@@ -99,8 +99,13 @@ class CustomError(Exception, metaclass=CustomErrorMeta):
         if not message:
             message = "An error occurred!"
 
+        truthy = ["1", "true", "yes", "on"]
+
         should_color = (
-            sys.stdout and sys.stdout.isatty() and not os.getenv("NO_COLOR") and not os.getenv("JETPYTOOLS_NO_COLOR")
+            sys.stdout
+            and sys.stdout.isatty()
+            and os.getenv("NO_COLOR") not in truthy
+            and os.getenv("JETPYTOOLS_NO_COLOR") not in truthy
         )
 
         if self.func:
