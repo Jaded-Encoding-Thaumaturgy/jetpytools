@@ -14,6 +14,11 @@ from ..exceptions import (
 )
 from ..types import FilePathType, FuncExcept, OpenBinaryMode, OpenTextMode, SPath
 
+if sys.version_info < (3, 13):
+    from typing_extensions import deprecated
+else:
+    from warnings import deprecated
+
 __all__ = [
     "add_script_path_hook",
     "check_perms",
@@ -25,10 +30,12 @@ __all__ = [
 _script_path_hooks = list[Callable[[], SPath | None]]()
 
 
+@deprecated("", category=PendingDeprecationWarning)
 def add_script_path_hook(hook: Callable[[], SPath | None]) -> None:
     _script_path_hooks.append(hook)
 
 
+@deprecated("", category=PendingDeprecationWarning)
 def remove_script_path_hook(hook: Callable[[], SPath | None]) -> None:
     _script_path_hooks.remove(hook)
 
