@@ -5,8 +5,19 @@ from os import F_OK, R_OK, W_OK, X_OK, access, getenv, path
 from pathlib import Path
 from typing import Callable
 
-from ..exceptions import FileIsADirectoryError, FileNotExistsError, FilePermissionError, FileWasNotFoundError
+from ..exceptions import (
+    CustomRuntimeError,
+    FileIsADirectoryError,
+    FileNotExistsError,
+    FilePermissionError,
+    FileWasNotFoundError,
+)
 from ..types import FilePathType, FuncExcept, OpenBinaryMode, OpenTextMode, SPath
+
+if sys.version_info < (3, 13):
+    from typing_extensions import deprecated
+else:
+    from warnings import deprecated
 
 __all__ = [
     "add_script_path_hook",
@@ -19,10 +30,12 @@ __all__ = [
 _script_path_hooks = list[Callable[[], SPath | None]]()
 
 
+@deprecated("", category=PendingDeprecationWarning)
 def add_script_path_hook(hook: Callable[[], SPath | None]) -> None:
     _script_path_hooks.append(hook)
 
 
+@deprecated("", category=PendingDeprecationWarning)
 def remove_script_path_hook(hook: Callable[[], SPath | None]) -> None:
     _script_path_hooks.remove(hook)
 
@@ -30,15 +43,34 @@ def remove_script_path_hook(hook: Callable[[], SPath | None]) -> None:
 def get_script_path() -> SPath:
     for hook in reversed(_script_path_hooks):
         if (script_path := hook()) is not None:
-            return script_path
+            return SPath(script_path)
 
-    import __main__
+    lib_root = __name__.split(".", 1)[0] if "." in __name__ else __name__
 
+    frame = sys._getframe(1)
     try:
-        path = SPath(__main__.__file__)
-        return path if path.exists() else SPath.cwd()
-    except AttributeError:
-        return SPath.cwd()
+        while frame:
+            f_globals = frame.f_globals
+            module_name: str = f_globals.get("__name__", "")
+
+            # Skip if the frame belongs to the current library family
+            if module_name.startswith(lib_root):
+                frame = frame.f_back
+                continue
+
+            filename = frame.f_code.co_filename
+
+            # - No __package__ (execution entry point)
+            # - Is a file on disk
+            # - Not in site-packages
+            if not f_globals.get("__package__") and path.isfile(filename) and "site-packages" not in filename:
+                return SPath(filename)
+
+            frame = frame.f_back
+
+        raise CustomRuntimeError("Couldn't find the script path")
+    finally:
+        del frame
 
 
 def get_user_data_dir() -> Path:
