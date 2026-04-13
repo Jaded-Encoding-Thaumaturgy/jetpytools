@@ -269,9 +269,9 @@ def norm_func_name(func_name: SupportsString | Callable[..., Any]) -> str:
     func = func_name
 
     if hasattr(func_name, "__name__"):
-        func_name = func.__name__
+        func_name = func.__name__  # type:ignore[union-attr]
     elif hasattr(func_name, "__qualname__"):
-        func_name = func.__qualname__
+        func_name = func.__qualname__  # type:ignore[union-attr]
 
     if isinstance(func, _HasSelfAttr):
         func = func.__self__ if isinstance(func.__self__, type) else func.__self__.__class__
