@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from os import X_OK, PathLike, access, listdir, path, walk
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Self, TypeAlias
+from typing import TYPE_CHECKING, Any, Literal, Self
 
 __all__ = [
     "FileDescriptor",
@@ -21,11 +21,11 @@ __all__ = [
 ]
 
 
-FileDescriptor: TypeAlias = int
+type FileDescriptor = int
 
-FilePathType: TypeAlias = str | bytes | PathLike[str] | PathLike[bytes]
+type FilePathType = str | bytes | PathLike[str] | PathLike[bytes]
 
-OpenTextModeUpdating: TypeAlias = Literal[
+type OpenTextModeUpdating = Literal[
     "r+",
     "+r",
     "rt+",
@@ -59,10 +59,10 @@ OpenTextModeUpdating: TypeAlias = Literal[
     "t+x",
     "+tx",
 ]
-OpenTextModeWriting: TypeAlias = Literal["w", "wt", "tw", "a", "at", "ta", "x", "xt", "tx"]
-OpenTextModeReading: TypeAlias = Literal["r", "rt", "tr", "U", "rU", "Ur", "rtU", "rUt", "Urt", "trU", "tUr", "Utr"]
+type OpenTextModeWriting = Literal["w", "wt", "tw", "a", "at", "ta", "x", "xt", "tx"]
+type OpenTextModeReading = Literal["r", "rt", "tr", "U", "rU", "Ur", "rtU", "rUt", "Urt", "trU", "tUr", "Utr"]
 
-OpenBinaryModeUpdating: TypeAlias = Literal[
+type OpenBinaryModeUpdating = Literal[
     "rb+",
     "r+b",
     "+rb",
@@ -88,11 +88,11 @@ OpenBinaryModeUpdating: TypeAlias = Literal[
     "b+x",
     "+bx",
 ]
-OpenBinaryModeWriting: TypeAlias = Literal["wb", "bw", "ab", "ba", "xb", "bx"]
-OpenBinaryModeReading: TypeAlias = Literal["rb", "br", "rbU", "rUb", "Urb", "brU", "bUr", "Ubr"]
+type OpenBinaryModeWriting = Literal["wb", "bw", "ab", "ba", "xb", "bx"]
+type OpenBinaryModeReading = Literal["rb", "br", "rbU", "rUb", "Urb", "brU", "bUr", "Ubr"]
 
-OpenTextMode: TypeAlias = OpenTextModeUpdating | OpenTextModeWriting | OpenTextModeReading
-OpenBinaryMode: TypeAlias = OpenBinaryModeUpdating | OpenBinaryModeReading | OpenBinaryModeWriting
+type OpenTextMode = OpenTextModeUpdating | OpenTextModeWriting | OpenTextModeReading
+type OpenBinaryMode = OpenBinaryModeUpdating | OpenBinaryModeReading | OpenBinaryModeWriting
 
 
 class SPath(Path):

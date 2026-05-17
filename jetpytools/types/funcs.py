@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator
-from typing import TYPE_CHECKING, Any, SupportsIndex, TypeAlias
+from typing import TYPE_CHECKING, Any, SupportsIndex
 
 from .supports import SupportsString
 
@@ -93,6 +93,6 @@ class SentinelDispatcher:
 
 
 Sentinel = SentinelDispatcher()
-SentinelT: TypeAlias = SentinelDispatcher
+type SentinelT = SentinelDispatcher
 
 _sentinels = dict[str, SentinelDispatcher]()
