@@ -28,11 +28,6 @@ from typing import (
 if TYPE_CHECKING:
     from inspect import Signature
 
-if sys.version_info < (3, 13):
-    from typing_extensions import TypeVar, deprecated
-else:
-    from warnings import deprecated
-
 from .builtins import KwargsT
 
 __all__ = [
@@ -748,12 +743,6 @@ class cachedproperty(property, Generic[_R_co, _T_Any]):
     __isabstractmethod__: bool = False
 
     cache_key = "_jetpt_cachedproperty_cache"
-
-    @deprecated(
-        "The cache dict is now set automatically. You no longer need to inherit from it", category=DeprecationWarning
-    )
-    class baseclass:
-        """Inherit from this class to automatically set the cache dict."""
 
     if TYPE_CHECKING:
 
