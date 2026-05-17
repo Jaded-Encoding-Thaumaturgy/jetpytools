@@ -80,8 +80,7 @@ def flatten(items: Any) -> Iterator[Any]:
 
     for val in items:
         if isinstance(val, Iterable) and not isinstance(val, (str, bytes)):
-            for sub_x in flatten(val):
-                yield sub_x
+            yield from flatten(val)
         else:
             yield val
 

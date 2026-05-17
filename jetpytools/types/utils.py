@@ -912,8 +912,7 @@ class LinearRangeLut(Mapping[int, int]):
         return len(self.ranges)
 
     def __iter__(self) -> Iterator[int]:
-        for i in range(len(self)):
-            yield i
+        yield from range(len(self))
 
     def __setitem__(self, n: int, _range: range) -> NoReturn:
         raise NotImplementedError
