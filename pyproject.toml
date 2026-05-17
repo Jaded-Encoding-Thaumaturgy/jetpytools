@@ -82,7 +82,20 @@ line-length = 120
 docstring-code-format = true
 
 [tool.ruff.lint]
-extend-select = ["E", "C4", "I", "PYI", "Q", "SIM", "N", "W", "RUF"]
+extend-select = [
+    "E",
+    "C4",
+    "I",
+    "PYI",
+    "Q",
+    "SIM",
+    "N",
+    "W",
+    "UP",
+    "FURB",
+    "RUF",
+]
+
 ignore = ["PYI041"]
 
 [tool.ruff.lint.per-file-ignores]

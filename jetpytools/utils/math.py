@@ -20,7 +20,7 @@ __all__ = [
 def clamp[Nb: (int, float)](val: Nb, min_val: Nb, max_val: Nb) -> Nb:
     """Faster max(min(value, max_val), min_val) "wrapper" """
 
-    return min_val if val < min_val else max_val if val > max_val else val
+    return min_val if val < min_val else max_val if val > max_val else val  # noqa: FURB136
 
 
 def clamp_arr[Nb: (int, float)](vals: Sequence[Nb], min_val: Nb, max_val: Nb) -> list[Nb]:
