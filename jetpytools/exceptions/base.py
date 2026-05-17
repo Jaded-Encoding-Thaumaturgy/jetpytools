@@ -29,8 +29,7 @@ class CustomErrorMeta(type):
     ) -> MetaSelf:
         cls = super().__new__(mcls, name, bases, namespace, **kwds)
 
-        if cls.__qualname__.startswith("Custom"):
-            cls.__qualname__ = cls.__qualname__[6:]
+        cls.__qualname__ = cls.__qualname__.removeprefix("Custom")
 
         cls.__module__ = Exception.__module__
 
