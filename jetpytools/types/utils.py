@@ -169,7 +169,7 @@ class _InjectedSelfFunc(Protocol[_T_co, _P, _R_co]):  # type: ignore[misc]
 _self_objects_cache = dict[type[Any], Any]()
 
 
-class _InjectSelfBase(Generic[_T_co, _P, _R_co]):
+class _InjectSelfBase(Generic[_T_co, _P, _R_co]):  # noqa: UP046
     """
     Base descriptor implementation for `inject_self`.
     """
@@ -388,7 +388,7 @@ class inject_self(_InjectSelfBase[_T_co, _P, _R_co], metaclass=_InjectSelfMeta):
             return self.__func__.__get__(instance, owner)()
 
 
-class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):
+class _InjectKwargsParamsBase(Generic[_T_co, _P, _R_co]):  # noqa: UP046
     """
     Base descriptor implementation for `inject_kwargs_params`.
     """
