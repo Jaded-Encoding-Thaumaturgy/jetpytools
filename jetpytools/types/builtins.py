@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Sequence, SupportsFloat, SupportsIndex
+from collections.abc import Sequence
+from typing import Any, SupportsFloat, SupportsIndex
 
 __all__ = [
     "ByteData",

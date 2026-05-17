@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import suppress
 from functools import wraps
 from threading import Lock
@@ -8,18 +9,13 @@ from types import LambdaType
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     ClassVar,
     Concatenate,
     Generic,
-    Iterable,
-    Iterator,
-    Mapping,
     NoReturn,
     ParamSpec,
     Protocol,
     Self,
-    Sequence,
     TypeVar,
     cast,
     overload,

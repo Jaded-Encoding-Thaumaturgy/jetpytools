@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Concatenate, overload
+from collections.abc import Callable
+from typing import Any, Concatenate, overload
 
 from ..exceptions import CustomRuntimeError, CustomValueError
 from ..types import KwargsT

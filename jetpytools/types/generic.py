@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum, auto
-from typing import Any, Callable, Literal
+from typing import Any, Literal
 
 from .builtins import SingleOrArr, SingleOrArrOpt
 from .supports import SupportsString

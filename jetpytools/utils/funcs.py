@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from functools import update_wrapper
 from types import FunctionType
-from typing import Any, Callable, Protocol, Sequence, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 __all__ = ["copy_func", "erase_module"]
 

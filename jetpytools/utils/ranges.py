@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from itertools import chain, zip_longest
-from typing import Iterable
 
 __all__ = ["interleave_arr"]
 

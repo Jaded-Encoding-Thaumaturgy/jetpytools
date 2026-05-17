@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from os import X_OK, PathLike, access, listdir, path, walk
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable, Literal, Self, TypeAlias
+from typing import TYPE_CHECKING, Any, Literal, Self, TypeAlias
 
 __all__ = [
     "FileDescriptor",

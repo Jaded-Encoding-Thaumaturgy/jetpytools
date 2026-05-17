@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Callable, Iterable, Protocol, SupportsFloat, SupportsIndex, TypeVar, overload, runtime_checkable
+from collections.abc import Callable, Iterable
+from typing import Any, Protocol, SupportsFloat, SupportsIndex, TypeVar, overload, runtime_checkable
 
 __all__ = [
     "ComparatorFunc",

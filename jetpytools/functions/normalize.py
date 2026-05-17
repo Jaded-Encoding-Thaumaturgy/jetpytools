@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Iterable, Iterator, Protocol, Sequence, overload, runtime_checkable
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from typing import Any, Protocol, overload, runtime_checkable
 
 from ..exceptions import CustomOverflowError
 from ..types import SoftRange, SoftRangeN, SoftRangesN, StrictRange, SupportsString, is_soft_range_n

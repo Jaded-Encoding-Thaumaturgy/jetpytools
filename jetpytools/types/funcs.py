@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, SupportsIndex, TypeAlias
+from collections.abc import Callable, Iterable, Iterator
+from typing import TYPE_CHECKING, Any, SupportsIndex, TypeAlias
 
 from .supports import SupportsString
 

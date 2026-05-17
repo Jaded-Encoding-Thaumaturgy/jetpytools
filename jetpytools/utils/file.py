@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import linecache
 import sys
+from collections.abc import Callable
 from os import F_OK, R_OK, W_OK, X_OK, access, getenv, path
 from pathlib import Path
-from typing import Callable
 
 from ..exceptions import (
     CustomRuntimeError,
