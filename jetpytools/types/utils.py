@@ -16,13 +16,18 @@ from typing import (
     ParamSpec,
     Protocol,
     Self,
-    TypeVar,
     cast,
     overload,
 )
 
+if sys.version_info < (3, 13):
+    from typing_extensions import TypeVar
+else:
+    from typing import TypeVar
+
 if TYPE_CHECKING:
     from inspect import Signature
+
 
 from .builtins import KwargsT
 
