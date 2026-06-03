@@ -3,7 +3,6 @@ from __future__ import annotations
 import linecache
 import sys
 from collections.abc import Callable
-from os import F_OK, R_OK, W_OK, X_OK, access, getenv, path
 from pathlib import Path
 
 from ..exceptions import (
@@ -63,6 +62,7 @@ def get_script_path() -> SPath:
 
 def get_user_data_dir() -> Path:
     """Get user data dir path."""
+    import os
 
     if sys.platform == "win32":
         import ctypes
@@ -75,11 +75,11 @@ def get_user_data_dir() -> Path:
             if ctypes.windll.kernel32.GetShortPathNameW(buf.value, buf2, 1024):
                 buf = buf2
 
-        return Path(path.normpath(buf.value))
+        return Path(os.path.normpath(buf.value))
     elif sys.platform == "darwin":
-        return Path(path.expanduser("~/Library/Application Support/"))
+        return Path(os.path.expanduser("~/Library/Application Support/"))
     else:
-        return Path(getenv("XDG_DATA_HOME", path.expanduser("~/.local/share")))
+        return Path(os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share")))
 
 
 def check_perms(
@@ -101,11 +101,12 @@ def check_perms(
         FileIsADirectoryError: Given path is a directory, not a file.
         FileWasNotFoundError: Parent directories exist, but the given file could not be found.
     """
+    import os
 
     file = Path(str(file))
     got_perms = False
 
-    mode_i = F_OK
+    mode_i = os.F_OK
 
     if func is not None and not str(file):
         raise FileNotExistsError(file, func)
@@ -114,22 +115,22 @@ def check_perms(
         mode_str = mode.replace(char, "")
 
     if not mode_str:  # pyright: ignore[reportPossiblyUnboundVariable]
-        mode_i = R_OK
+        mode_i = os.R_OK
     elif "x" in mode_str:
-        mode_i = X_OK
+        mode_i = os.X_OK
     elif "+" in mode_str or "w" in mode_str:
-        mode_i = W_OK
+        mode_i = os.W_OK
 
     check_file = file
 
-    if not strict and mode_i != R_OK:
+    if not strict and mode_i != os.R_OK:
         while not check_file.exists():
             check_file = check_file.parent
 
     if strict and file.is_dir():
         raise FileIsADirectoryError(file, func)
 
-    got_perms = access(check_file, mode_i)
+    got_perms = os.access(check_file, mode_i)
 
     if func is not None and not got_perms:
         if strict and not file.exists():
