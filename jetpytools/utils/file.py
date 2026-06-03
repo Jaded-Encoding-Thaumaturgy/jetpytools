@@ -39,15 +39,18 @@ def get_script_path() -> SPath:
                 continue
 
             filename = frame.f_code.co_filename
+            pfilename = SPath(filename)
 
             # - No __package__ (execution entry point)
             # - Not in site-packages
+            # - Not in the bin or Scripts folder
             # - Is a file on disk
             # - Is a virtual file
             if (
                 not f_globals.get("__package__")
                 and "site-packages" not in filename
-                and (path.isfile(filename) or filename in linecache.cache)
+                and pfilename.parent.name not in ("bin", "Scripts")
+                and (pfilename.is_file() or filename in linecache.cache)
             ):
                 return SPath(filename)
 
