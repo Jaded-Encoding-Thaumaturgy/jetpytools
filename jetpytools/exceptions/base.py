@@ -60,9 +60,9 @@ class CustomError(Exception, metaclass=CustomErrorMeta):
 
     def __call__(
         self,
-        message: SupportsString | None | MissingT = MISSING,
-        func: FuncExcept | None | MissingT = MISSING,
-        reason: SupportsString | FuncExcept | None | MissingT = MISSING,
+        message: SupportsString | MissingT | None = MISSING,
+        func: FuncExcept | MissingT | None = MISSING,
+        reason: SupportsString | FuncExcept | MissingT | None = MISSING,
         **kwargs: Any,
     ) -> Self:
         """

@@ -534,7 +534,7 @@ class inject_kwargs_params(_InjectKwargsParamsBase[_T_co, _P, _R_co]):
 
 
 class _ComplexHash[**P, R]:
-    __slots__ = "_func"
+    __slots__ = ("_func",)
 
     def __init__(self, func: Callable[P, R]) -> None:
         self._func = func
@@ -723,7 +723,7 @@ class classproperty(classproperty_base[_T, _R_co, _T_Any]):
             if names is None:
                 with suppress(AttributeError):
                     getattr(type_, cls.cache_key).clear()
-                return None
+                return
 
             from ..functions import to_arr
 
@@ -816,7 +816,7 @@ class cachedproperty(property, Generic[_R_co, _T_Any]):
         """
         if names is None:
             obj.__dict__.get(cls.cache_key, {}).clear()
-            return None
+            return
 
         from ..functions import to_arr
 

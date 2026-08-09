@@ -91,7 +91,7 @@ def next_power_of_y(x: float, y: int) -> int:
 
 def spline_coeff(
     x: int,
-    coordinates: list[tuple[float, float]] = [
+    coordinates: Sequence[tuple[float, float]] = [
         (0, 0),
         (0.5, 0.1),
         (1, 0.6),
