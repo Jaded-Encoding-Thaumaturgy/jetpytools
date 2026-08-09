@@ -4,7 +4,7 @@ import sys
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import suppress
 from functools import wraps
-from threading import Lock
+from threading import RLock
 from types import LambdaType
 from typing import (
     TYPE_CHECKING,
@@ -849,7 +849,7 @@ class KwargsNotNone(KwargsT):
 
 class SingletonMeta(type):
     _instances: ClassVar[dict[SingletonMeta, Any]] = {}
-    _lock = Lock()
+    _lock = RLock()
 
     _singleton_init: bool
 
