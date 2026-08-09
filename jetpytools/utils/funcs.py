@@ -10,14 +10,10 @@ __all__ = ["copy_func", "erase_module"]
 
 def copy_func(f: Callable[..., Any]) -> FunctionType:
     """Try copying a function."""
-
-    try:
-        g = FunctionType(f.__code__, f.__globals__, name=f.__name__, argdefs=f.__defaults__, closure=f.__closure__)
-        g.__kwdefaults__ = f.__kwdefaults__
-        g = update_wrapper(g, f)
-        return g  # type: ignore[return-value]
-    except BaseException:
-        return f  # type: ignore[return-value]
+    g = FunctionType(f.__code__, f.__globals__, name=f.__name__, argdefs=f.__defaults__, closure=f.__closure__)
+    g.__kwdefaults__ = f.__kwdefaults__
+    g = update_wrapper(g, f)
+    return g  # type: ignore[return-value]
 
 
 @runtime_checkable

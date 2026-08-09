@@ -96,7 +96,7 @@ extend-select = [
     "RUF",
 ]
 
-ignore = ["PYI041"]
+ignore = ["PYI041", 'B009']
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.*" = ["F401", "F403"]
