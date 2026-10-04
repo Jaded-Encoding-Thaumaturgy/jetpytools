@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import sys
 from collections.abc import Callable
-from enum import Enum, auto
-from typing import Any, Literal
+from typing import Any
+
+from typing_extensions import Sentinel as sentinel  # noqa: N813
 
 from .builtins import SingleOrArr, SingleOrArrOpt
 from .supports import SupportsString
@@ -11,16 +11,9 @@ from .supports import SupportsString
 __all__ = ["MISSING", "DataType", "FuncExcept", "FuncExceptT", "MissingT", "PassthroughC", "StrArr", "StrArrOpt"]
 
 
-if sys.version_info >= (3, 15):
-    MISSING = sentinel("MISSING")  # noqa: F821
-    MissingT = MISSING
-else:
+MISSING = sentinel("MISSING")
+MissingT = MISSING
 
-    class _MissingType(Enum):
-        MISSING = auto()
-
-    type MissingT = Literal[_MissingType.MISSING]
-    MISSING = _MissingType.MISSING
 
 type DataType = str | bytes | bytearray | SupportsString
 
