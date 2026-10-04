@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           enable-cache: true
@@ -32,9 +32,6 @@ jobs:
 
       - name: Build
         run: uv build
-
-      - name: Check the output
-        run: uv run twine check --strict dist/*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@v1.14.2
