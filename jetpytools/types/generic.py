@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import builtins
+import sys
 from collections.abc import Callable
 from typing import Any
 
-from typing_extensions import Sentinel as sentinel  # noqa: N813
+if sys.version_info >= (3, 15):
+    sentinel = builtins.sentinel
+else:
+    from typing_extensions import Sentinel as sentinel  # noqa: N813
 
 from .builtins import SingleOrArr, SingleOrArrOpt
 from .supports import SupportsString
