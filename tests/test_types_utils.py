@@ -4,7 +4,6 @@ from typing import Any
 import pytest
 
 from jetpytools import inject_kwargs_params, inject_self
-from jetpytools.types.utils import _self_objects_cache
 
 
 def test_inject_self_instance_and_class() -> None:
@@ -25,25 +24,30 @@ def test_inject_self_instance_and_class() -> None:
 
 
 def test_inject_self_cached_reuses_instance() -> None:
-    _self_objects_cache.clear()
+    inject_self.cached.clear_cache()
 
     class B:
+        created_count = 0
+
         def __init__(self) -> None:
-            self.created = True
+            B.created_count += 1
 
         @inject_self.cached
-        def id(self) -> int:
-            return id(self)
+        def creation_number(self) -> int:
+            return self.created_count
 
-    first_id = B.id()
-    second_id = B.id()
+    first_creation_number = B.creation_number()
+    second_creation_number = B.creation_number()
 
-    assert first_id == second_id
-    assert B in _self_objects_cache or any(isinstance(v, B) for v in _self_objects_cache.values())
+    assert first_creation_number == second_creation_number == 1
+
+    inject_self.cached.clear_cache(B)
+
+    assert B.creation_number() == 2
 
 
 def test_inject_self_cached_property_variant() -> None:
-    _self_objects_cache.clear()
+    inject_self.cached.clear_cache()
 
     class C:
         counter = 0
@@ -58,7 +62,10 @@ def test_inject_self_cached_property_variant() -> None:
     # Should instantiate once
     assert C.prop == 1
     assert C.prop == 1
-    assert len(_self_objects_cache) == 1
+
+    inject_self.cached.clear_cache(C)
+
+    assert C.prop == 2
 
 
 def test_inject_self_init_kwargs_forwards_args() -> None:

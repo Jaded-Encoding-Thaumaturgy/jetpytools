@@ -352,6 +352,24 @@ class inject_self(_InjectSelfBase[_T_co, _P, _R_co], metaclass=_InjectSelfMeta):
 
         __slots__ = ()
 
+        @staticmethod
+        def clear_cache(owner: type[Any] | None = None) -> None:
+            """
+            Clear instances cached by `inject_self.cached`.
+
+            The cache is shared by all `inject_self.cached` descriptors and is keyed by owning class.
+            Clearing one owner therefore resets every cached descriptor on that class.
+
+            Args:
+                owner: The class whose cached instance should be removed.
+                    If omitted, clears cached instances for every class.
+
+            """
+            if owner is None:
+                _self_objects_cache.clear()
+            else:
+                _self_objects_cache.pop(owner, None)
+
         class property(Generic[_T1_co, _P1, _R1_co], metaclass=_InjectSelfMeta):
             """Property variant of `inject_self.cached` that auto-calls the wrapped method."""
 
